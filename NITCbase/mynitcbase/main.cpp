@@ -30,10 +30,10 @@ int main(int argc, char *argv[]) {
         Attribute attrCatRecord[ATTRCAT_NO_ATTRS];
 
         attrCatBuffer.getRecord(attrCatRecord, i);
-
+        char text[] = "hello";
         if(relCatRecord[i].sVal == attrCatRecord[j].sVal){
           const char *attrType = attrCatRecord[ATTRCAT_ATTR_TYPE_INDEX].nVal == NUMBER ? "NUM" : "STR";
-          printf("  %s: %s\n", attrCatRecord[i].sVal, attrType);
+          printf("  %s: %s\n", text,/*attrCatRecord[i].sVal*/ attrType);
         }
       }
       std::cout<<std::endl;

@@ -4,7 +4,7 @@
 #include <cstring>
 
 BlockBuffer::BlockBuffer(int blockNum){
-	this.blockNum = blockNum;
+	this->blockNum = blockNum;
 }
 
 RecBuffer::RecBuffer(int blockNum) : BlockBuffer::BlockBuffer(blockNum){}
@@ -12,7 +12,7 @@ RecBuffer::RecBuffer(int blockNum) : BlockBuffer::BlockBuffer(blockNum){}
 int BlockBuffer::getHeader(struct HeadInfo *head){
 	unsigned char buffer[BLOCK_SIZE];
 
-	Disk::readBlock(buffer, this.blockNum);
+	Disk::readBlock(buffer, this->blockNum);
 
 	memcpy(&head->numSlots, buffer + 24, 4);
 	memcpy(&head->numEntries, buffer + 16, 4);
@@ -23,3 +23,28 @@ int BlockBuffer::getHeader(struct HeadInfo *head){
 	return SUCCESS;
 }
 
+int RecBuffer::getRecord(union Attribute *rec, int slotNum){
+	struct HeadInfo head;
+
+	RecBuffer relCatBuffer(RELCAT_BLOCK);
+
+
+	relCatBuffer.getHeader(&head);
+
+	int attrCount = head.numAttrs;
+	int slotCount = head.numSlots;
+
+
+	unsigned char buffer[BLOCK_SIZE];
+
+	Disk::readBlock(buffer, this->blockNum);
+
+	int recordSize = attrCount * ATTR_SIZE;
+	//each slot require one byte for slotCount
+	//recordSize = attrCount* ATTR_size
+	unsigned char *slotPointer = (unsigned char*)(&head + HEADER_SIZE + slotCount + (recordSize)*slotNum);
+
+	memcpy(rec, slotPointer, recordSize);
+
+	return SUCCESS;
+}
