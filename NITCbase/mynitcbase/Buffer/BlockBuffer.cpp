@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 
 BlockBuffer::BlockBuffer(int blockNum){
 	this->blockNum = blockNum;
@@ -19,17 +20,15 @@ int BlockBuffer::getHeader(struct HeadInfo *head){
 	memcpy(&head->numAttrs, buffer + 20, 4);
 	memcpy(&head->rblock, buffer + 12, 4);
 	memcpy(&head->lblock, buffer + 8, 4);
+	memcpy(&head->pblock, buffer + 4, 4);
 
 	return SUCCESS;
 }
-
+using namespace std;
 int RecBuffer::getRecord(union Attribute *rec, int slotNum){
 	struct HeadInfo head;
 
-	RecBuffer relCatBuffer(RELCAT_BLOCK);
-
-
-	relCatBuffer.getHeader(&head);
+	RecBuffer:getHeader(&head);
 
 	int attrCount = head.numAttrs;
 	int slotCount = head.numSlots;
@@ -42,8 +41,9 @@ int RecBuffer::getRecord(union Attribute *rec, int slotNum){
 	int recordSize = attrCount * ATTR_SIZE;
 	//each slot require one byte for slotCount
 	//recordSize = attrCount* ATTR_size
-	unsigned char *slotPointer = (unsigned char*)(&head + HEADER_SIZE + slotCount + (recordSize)*slotNum);
-
+	int slotMapSize = slotCount;
+	unsigned char *slotPointer = (buffer + HEADER_SIZE + slotMapSize + recordSize * slotNum);
+	
 	memcpy(rec, slotPointer, recordSize);
 
 	return SUCCESS;

@@ -4,6 +4,8 @@
 #include "FrontendInterface/FrontendInterface.h"
 #include <bits/stdc++.h>
 
+using namespace std;
+
 int main(int argc, char *argv[]) {
   /* Initialize the Run Copy of Disk */
   Disk disk_run;
@@ -16,27 +18,27 @@ int main(int argc, char *argv[]) {
 
   relCatBuffer.getHeader(&relCatHeader);
   attrCatBuffer.getHeader(&attrCatHeader);
-
-  for(int i = 0; i <= NO_OF_ATTRS_RELCAT_ATTRCAT; i++){
+  
+  for(int i = 0; i < relCatHeader.numEntries; i++){
       
       Attribute relCatRecord[RELCAT_NO_ATTRS];
 
       relCatBuffer.getRecord(relCatRecord, i);
 
       printf("Relation: %s\n", relCatRecord[RELCAT_REL_NAME_INDEX].sVal);
-
-      for(int j = 0; j <= NO_OF_ATTRS_RELCAT_ATTRCAT; j++){
+ 
+      for(int j = 0; j < attrCatHeader.numEntries; j++){
 
         Attribute attrCatRecord[ATTRCAT_NO_ATTRS];
 
-        attrCatBuffer.getRecord(attrCatRecord, i);
-        char text[] = "hello";
-        if(relCatRecord[i].sVal == attrCatRecord[j].sVal){
+        attrCatBuffer.getRecord(attrCatRecord, i*relCatHeader.numEntries + j);
+
+        if(strcmp(relCatRecord[RELCAT_REL_NAME_INDEX].sVal, attrCatRecord[ATTRCAT_REL_NAME_INDEX].sVal) == 0){
           const char *attrType = attrCatRecord[ATTRCAT_ATTR_TYPE_INDEX].nVal == NUMBER ? "NUM" : "STR";
-          printf("  %s: %s\n", text,/*attrCatRecord[i].sVal*/ attrType);
+          printf("  %s: %s\n", attrCatRecord[ATTRCAT_ATTR_NAME_INDEX].sVal, attrType);
         }
       }
-      std::cout<<std::endl;
+      printf("\n");
   }
 
   return 0;
