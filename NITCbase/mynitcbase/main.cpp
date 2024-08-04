@@ -8,7 +8,9 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
   /* Initialize the Run Copy of Disk */
+  StaticBuffer buffer;
   Disk disk_run;
+
 
   RecBuffer relCatBuffer(RELCAT_BLOCK);
   RecBuffer attrCatBuffer(ATTRCAT_BLOCK);
