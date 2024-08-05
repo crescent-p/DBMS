@@ -10,6 +10,7 @@ int main(int argc, char *argv[]) {
   /* Initialize the Run Copy of Disk */
   StaticBuffer buffer;
   Disk disk_run;
+  OpenRelTable cache;
 
 
   RecBuffer relCatBuffer(RELCAT_BLOCK);
