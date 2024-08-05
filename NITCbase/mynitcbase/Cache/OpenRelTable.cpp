@@ -5,6 +5,13 @@
 
 OpenRelTableMetaInfo OpenRelTable::tableMetaInfo[MAX_OPEN];
 
+/*
+Step 1: get RelationCatalog and store in relCacheEntry, then store it in relCache which is declared in RelCacheTable.cpp
+	currently there are only two realtionCatalog caches RelationCatalog and AttrCatalog
+
+Step 2: get RelCatalog and store in attrCacheEntry. Create a linked list of all the attributes and store in RELATTR_RELID of attrCache
+do the same for AttrCatalog
+*/
 
 OpenRelTable::OpenRelTable(){
 	for(int i = 0; i < MAX_OPEN; i++){

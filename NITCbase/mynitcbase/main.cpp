@@ -12,36 +12,17 @@ int main(int argc, char *argv[]) {
   Disk disk_run;
   OpenRelTable cache;
 
-
-  RecBuffer relCatBuffer(RELCAT_BLOCK);
-  RecBuffer attrCatBuffer(ATTRCAT_BLOCK);
-
-  HeadInfo relCatHeader;
-  HeadInfo attrCatHeader;
-
-  relCatBuffer.getHeader(&relCatHeader);
-  attrCatBuffer.getHeader(&attrCatHeader);
-  
-  for(int i = 0; i < relCatHeader.numEntries; i++){
-      
-      Attribute relCatRecord[RELCAT_NO_ATTRS];
-
-      relCatBuffer.getRecord(relCatRecord, i);
-
-      printf("Relation: %s\n", relCatRecord[RELCAT_REL_NAME_INDEX].sVal);
- 
-      for(int j = 0; j < attrCatHeader.numEntries; j++){
-
-        Attribute attrCatRecord[ATTRCAT_NO_ATTRS];
-
-        attrCatBuffer.getRecord(attrCatRecord, i*relCatHeader.numEntries + j);
-
-        if(strcmp(relCatRecord[RELCAT_REL_NAME_INDEX].sVal, attrCatRecord[ATTRCAT_REL_NAME_INDEX].sVal) == 0){
-          const char *attrType = attrCatRecord[ATTRCAT_ATTR_TYPE_INDEX].nVal == NUMBER ? "NUM" : "STR";
-          printf("  %s: %s\n", attrCatRecord[ATTRCAT_ATTR_NAME_INDEX].sVal, attrType);
-        }
-      }
-      printf("\n");
+  for(int i = 0; i < 2; i++){
+    RelCatEntry* relCatEntry = new RelCatEntry;
+    RelCacheTable::getRelCatEntry(i, relCatEntry); 
+    printf("%s\n", relCatEntry->relName);
+    for(int j = 0; j < 6; j++){
+      AttrCatEntry* attrCatEntry = new AttrCatEntry;
+      AttrCacheTable::getAttrCatEntry(i, j, attrCatEntry);
+      const char* type = (NUMBER == attrCatEntry->attrType) ? "NUM" : "STR";
+      printf(" %s: %s\n", attrCatEntry->attrName, type);
+    }
+    printf("\n");
   }
 
   return 0;
