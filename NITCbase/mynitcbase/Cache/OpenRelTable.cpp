@@ -56,42 +56,49 @@ OpenRelTable::OpenRelTable(){
 
 
 	//setting relCatAtributes to attrCache.
-
 	AttrCacheEntry* head = new AttrCacheEntry;
 	AttrCacheEntry* attrHeadcpy = head;
-	for(int i = 0; i < 6; i++){
-		attrCatBlock.getRecord(attrCatRecord, i);
-		AttrCatEntry* temp = new AttrCatEntry;
-		AttrCacheTable::recordToAttrCatEntry(attrCatRecord, temp);
-		head->attrCatEntry = *temp;
-		head->recId.slot = i;
-		head->recId.block = RELCAT_BLOCK;
-		head->next = new AttrCacheEntry;
-		head = head->next;
-	}  
+	int j = 0;
+	int traversedSoFar = 0;
+	for(int i = 0; i < attrCatHeadInfo.numEntries; i++){
+		head = new AttrCacheEntry;
+		AttrCacheEntry* attrHeadcpy = head;
+		for(; j < (i + 1)*6 ; j++){
+				attrCatBlock.getRecord(attrCatRecord, j);
+				AttrCatEntry* temp = new AttrCatEntry;
+				AttrCacheTable::recordToAttrCatEntry(attrCatRecord, temp);
+				head->attrCatEntry = *temp;
+				head->recId.slot = j;
+				head->recId.block = RELCAT_BLOCK;
+				head->next = new AttrCacheEntry;
+				head = head->next;
+		}  
+		traversedSoFar += attrCatRecord[ATTRCAT_NO_ATTRS].nVal;
+		head = NULL;
 
-	head = NULL;
-
-	AttrCacheTable::attrCache[RELCAT_RELID] = attrHeadcpy;
-
-	head = new AttrCacheEntry;
-	attrHeadcpy = head;
-	for(int i = 6; i <= 11; i++){
-		attrCatBlock.getRecord(attrCatRecord, i);
-		AttrCatEntry* temp = new AttrCatEntry;
-		AttrCacheTable::recordToAttrCatEntry(attrCatRecord, temp);
-		head->attrCatEntry = *temp;
-		head->recId.slot = i;
-		head->recId.block = ATTRCAT_BLOCK;
-		head->next = new AttrCacheEntry;
-		head = head->next;
+		AttrCacheTable::attrCache[i] = attrHeadcpy;
 	}
-	head = NULL;
 
-	AttrCacheTable::attrCache[ATTRCAT_RELID] = attrHeadcpy;
 
 }
 
 OpenRelTable::~OpenRelTable(){
+
+	//free Relation cache tables.
 	free(RelCacheTable::relCache[RELCAT_RELID]);
+	free(RelCacheTable::relCache[ATTRCAT_RELID]);
+
+	//free all the linked list elements from attrCacheTabel.
+	AttrCacheEntry* head =  AttrCacheTable::attrCache[RELCAT_RELID];
+	while(head != nullptr){
+		AttrCacheEntry* temp = head->next;
+		free(head);
+		head = temp;
+	}
+ 	head =  AttrCacheTable::attrCache[ATTRCAT_RELID];
+	while(head != nullptr){
+		AttrCacheEntry* temp = head->next;
+		free(head);
+		head = temp;
+	}
 }

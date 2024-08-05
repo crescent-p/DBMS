@@ -12,13 +12,30 @@ int main(int argc, char *argv[]) {
   Disk disk_run;
   OpenRelTable cache;
 
-  for(int i = 0; i < 2; i++){
-    RelCatEntry* relCatEntry = new RelCatEntry;
+
+
+  RelCatEntry* relCatEntry = new RelCatEntry;
+  RelCacheTable::getRelCatEntry(0, relCatEntry);
+
+  RecBuffer::BlockBuffer relBlockBuffer(RELCAT_BLOCK);
+  RecBuffer::BlockBuffer attrBlockBuffer(ATTRCAT_BLOCK);
+
+  HeadInfo relCatHeadInfo;
+  relBlockBuffer.getHeader(&relCatHeadInfo);
+
+  for(int i = 0; i < relCatHeadInfo.numEntries; i++){
     RelCacheTable::getRelCatEntry(i, relCatEntry); 
-    printf("%s\n", relCatEntry->relName);
-    for(int j = 0; j < 6; j++){
+    printf("\n %s\n Realation: ", relCatEntry->relName);
+    HeadInfo attrCatHeadInfo;
+    attrBlockBuffer.getHeader(&attrCatHeadInfo);
+    for(int j = 0; j < attrCatHeadInfo.numEntries; j++){
+
       AttrCatEntry* attrCatEntry = new AttrCatEntry;
       AttrCacheTable::getAttrCatEntry(i, j, attrCatEntry);
+      if(j == 0){
+        printf("%s\n", attrCatEntry->relName);
+      }
+      if(strcmp(relCatEntry->relName, attrCatEntry->relName) != 0) continue;
       const char* type = (NUMBER == attrCatEntry->attrType) ? "NUM" : "STR";
       printf(" %s: %s\n", attrCatEntry->attrName, type);
     }
