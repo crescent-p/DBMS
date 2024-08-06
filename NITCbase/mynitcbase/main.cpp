@@ -25,17 +25,17 @@ int main(int argc, char *argv[]) {
 
   for(int i = 0; i < relCatHeadInfo.numEntries; i++){
     RelCacheTable::getRelCatEntry(i, relCatEntry); 
-    printf("\n %s\n Realation: ", relCatEntry->relName);
+    printf("\n %s\n Relation: ", relCatEntry->relName);
     HeadInfo attrCatHeadInfo;
     attrBlockBuffer.getHeader(&attrCatHeadInfo);
-    for(int j = 0; j < attrCatHeadInfo.numEntries; j++){
+    for(int j = 0; j < relCatHeadInfo.numAttrs; j++){
 
       AttrCatEntry* attrCatEntry = new AttrCatEntry;
       AttrCacheTable::getAttrCatEntry(i, j, attrCatEntry);
       if(j == 0){
         printf("%s\n", attrCatEntry->relName);
       }
-      if(strcmp(relCatEntry->relName, attrCatEntry->relName) != 0) continue;
+      // if(strcmp(relCatEntry->relName, attrCatEntry->relName) != 0 || 1) continue;
       const char* type = (NUMBER == attrCatEntry->attrType) ? "NUM" : "STR";
       printf(" %s: %s\n", attrCatEntry->attrName, type);
     }

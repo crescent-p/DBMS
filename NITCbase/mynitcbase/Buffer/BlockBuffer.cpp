@@ -33,6 +33,15 @@ int BlockBuffer::getHeader(struct HeadInfo *head){
 using namespace std;
 int RecBuffer::getRecord(union Attribute *rec, int slotNum){
 	struct HeadInfo head;
+	RecBuffer::getHeader(&head);
+
+	//std::cout<<slotNum<<std::endl;
+
+	while(slotNum >= head.numSlots){
+		slotNum -= head.numSlots;
+		blockNum = head.rblock;
+		RecBuffer::getHeader(&head);
+	}
 
 	RecBuffer:getHeader(&head);
 

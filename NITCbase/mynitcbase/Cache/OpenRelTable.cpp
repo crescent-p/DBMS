@@ -24,30 +24,23 @@ OpenRelTable::OpenRelTable(){
 	HeadInfo relCatHeadInfo;
 	relCatBlock.getHeader(&relCatHeadInfo);
 
-	Attribute relCatRecord[RELCAT_NO_ATTRS];
-	relCatBlock.getRecord(relCatRecord, RELCAT_SLOTNUM_FOR_RELCAT);
 
-	struct RelCacheEntry relCacheEntry;
-	RelCacheTable::recordToRelCatEntry(relCatRecord, &relCacheEntry.relCatEntry);
-	relCacheEntry.recId.block = RELCAT_BLOCK;
-	relCacheEntry.recId.slot = RELCAT_SLOTNUM_FOR_RELCAT;
+	for(int relId = 0; relId < relCatHeadInfo.numEntries; relId++){
+		Attribute relCatRecord[RELCAT_NO_ATTRS];
+		relCatBlock.getRecord(relCatRecord, relId);
 
-	RelCacheTable::relCache[RELCAT_RELID] = new RelCacheEntry;
-	*(RelCacheTable::relCache[RELCAT_RELID]) = relCacheEntry;
+		struct RelCacheEntry relCacheEntry;
+		RelCacheTable::recordToRelCatEntry(relCatRecord, &relCacheEntry.relCatEntry);
+		relCacheEntry.recId.block = relId;
+		relCacheEntry.recId.slot = relId;
+
+		RelCacheTable::relCache[relId] = new RelCacheEntry;
+		*(RelCacheTable::relCache[relId]) = relCacheEntry;	
+	}
+	
 
 
 	Attribute attrCatRecord[ATTRCAT_NO_ATTRS];
-	relCatBlock.getRecord(attrCatRecord, RELCAT_SLOTNUM_FOR_ATTRCAT);
-
-
-	RelCacheTable::recordToRelCatEntry(attrCatRecord, &relCacheEntry.relCatEntry);
-	relCacheEntry.recId.block = ATTRCAT_BLOCK;
-	relCacheEntry.recId.slot = RELCAT_SLOTNUM_FOR_ATTRCAT;
-
-
-	RelCacheTable::relCache[ATTRCAT_RELID] = new RelCacheEntry;
-	*(RelCacheTable::relCache[ATTRCAT_RELID]) = relCacheEntry;
-
 
 	RecBuffer attrCatBlock(ATTRCAT_BLOCK);
 
@@ -60,16 +53,17 @@ OpenRelTable::OpenRelTable(){
 	AttrCacheEntry* attrHeadcpy = head;
 	int j = 0;
 	int traversedSoFar = 0;
-	for(int i = 0; i < attrCatHeadInfo.numEntries; i++){
+	for(int i = 0; i < relCatHeadInfo.numEntries; i++){
 		head = new AttrCacheEntry;
 		AttrCacheEntry* attrHeadcpy = head;
-		for(; j < (i + 1)*6 ; j++){
+		for(; j < traversedSoFar + attrCatHeadInfo.numAttrs ; j++){
 				attrCatBlock.getRecord(attrCatRecord, j);
 				AttrCatEntry* temp = new AttrCatEntry;
 				AttrCacheTable::recordToAttrCatEntry(attrCatRecord, temp);
+				if(temp == nullptr) break;
 				head->attrCatEntry = *temp;
 				head->recId.slot = j;
-				head->recId.block = RELCAT_BLOCK;
+				head->recId.block = i;
 				head->next = new AttrCacheEntry;
 				head = head->next;
 		}  
