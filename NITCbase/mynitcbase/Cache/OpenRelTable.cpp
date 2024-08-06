@@ -51,23 +51,26 @@ OpenRelTable::OpenRelTable(){
 	//setting relCatAtributes to attrCache.
 	AttrCacheEntry* head = new AttrCacheEntry;
 	AttrCacheEntry* attrHeadcpy = head;
-	int j = 0;
-	int traversedSoFar = 0;
+	
 	for(int i = 0; i < relCatHeadInfo.numEntries; i++){
 		head = new AttrCacheEntry;
 		AttrCacheEntry* attrHeadcpy = head;
-		for(; j < traversedSoFar + attrCatHeadInfo.numAttrs ; j++){
-				attrCatBlock.getRecord(attrCatRecord, j);
-				AttrCatEntry* temp = new AttrCatEntry;
-				AttrCacheTable::recordToAttrCatEntry(attrCatRecord, temp);
-				if(temp == nullptr) break;
-				head->attrCatEntry = *temp;
-				head->recId.slot = j;
-				head->recId.block = i;
-				head->next = new AttrCacheEntry;
-				head = head->next;
+		Attribute relCatRecord[RELCAT_NO_ATTRS];
+		relCatBlock.getRecord(relCatRecord, i);
+		for(int j = 0; j < attrCatHeadInfo.numEntries ; j++){
+			attrCatBlock.getRecord(attrCatRecord, j);
+			AttrCatEntry* temp = new AttrCatEntry;
+			AttrCacheTable::recordToAttrCatEntry(attrCatRecord, temp);
+
+			if(strcmp(relCatRecord[RELCAT_REL_NAME_INDEX].sVal, attrCatRecord[ATTRCAT_REL_NAME_INDEX].sVal )== 0 ){		
+					if(temp == nullptr) break;
+					head->attrCatEntry = *temp;
+					head->recId.slot = j;
+					head->recId.block = ATTRCAT_BLOCK;
+					head->next = new AttrCacheEntry;
+					head = head->next;	
+				}
 		}  
-		traversedSoFar += attrCatRecord[ATTRCAT_NO_ATTRS].nVal;
 		head = NULL;
 
 		AttrCacheTable::attrCache[i] = attrHeadcpy;
@@ -84,11 +87,11 @@ OpenRelTable::~OpenRelTable(){
 
 	//free all the linked list elements from attrCacheTabel.
 	AttrCacheEntry* head =  AttrCacheTable::attrCache[RELCAT_RELID];
-	while(head != nullptr){
-		AttrCacheEntry* temp = head->next;
-		free(head);
-		head = temp;
-	}
+	// while(head != nullptr){
+	// 	AttrCacheEntry* temp = head->next;
+	// 	free(head);
+	// 	head = temp;
+	// }
  	head =  AttrCacheTable::attrCache[ATTRCAT_RELID];
 	while(head != nullptr){
 		AttrCacheEntry* temp = head->next;

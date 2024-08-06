@@ -14,7 +14,7 @@ int AttrCacheTable::getAttrCatEntry(int relId, int attrOffset, AttrCatEntry* att
 	}
 
 	for(AttrCacheEntry* entry = AttrCacheTable::attrCache[relId]; entry != nullptr; entry = entry->next){
-		if(entry->attrCatEntry.offset == attrOffset){
+		if(entry != nullptr && entry->attrCatEntry.offset == attrOffset){
 
 			strcpy(attrCatBuf->relName, entry->attrCatEntry.relName); 
 			strcpy(attrCatBuf->attrName, entry->attrCatEntry.attrName);

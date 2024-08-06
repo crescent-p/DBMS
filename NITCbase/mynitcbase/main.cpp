@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
       if(j == 0){
         printf("%s\n", attrCatEntry->relName);
       }
-      // if(strcmp(relCatEntry->relName, attrCatEntry->relName) != 0 || 1) continue;
+      if(strcmp(relCatEntry->relName, attrCatEntry->relName) != 0) continue;
       const char* type = (NUMBER == attrCatEntry->attrType) ? "NUM" : "STR";
       printf(" %s: %s\n", attrCatEntry->attrName, type);
     }
