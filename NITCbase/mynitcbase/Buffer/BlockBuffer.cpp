@@ -36,7 +36,6 @@ int RecBuffer::getRecord(union Attribute *rec, int slotNum){
 	RecBuffer::getHeader(&head);
 
 	//std::cout<<slotNum<<std::endl;
-
 	while(slotNum >= head.numSlots){
 		slotNum -= head.numSlots;
 		blockNum = head.rblock;
