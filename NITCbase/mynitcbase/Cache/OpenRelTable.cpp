@@ -99,3 +99,10 @@ OpenRelTable::~OpenRelTable(){
 		head = temp;
 	}
 }
+
+int OpenRelTable::getRelId(char relName[ATTR_SIZE]){
+	
+	if(strcmp(relName, ATTRCAT_RELNAME) == 0) return ATTRCAT_RELID;
+	if(strcmp(relName, RELCAT_RELNAME) == 0) return RELCAT_RELID;
+	return E_RELNOTOPEN;
+}
