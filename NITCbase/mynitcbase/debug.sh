@@ -1,6 +1,8 @@
 make mode=debug
 gdb nitcbase-debug << EOF
-break $1
+break Algebra::select
+break linearSearch
+break getAttrCatEntry 
 run
-c
+SELECT * FROM Students INTO null WHERE Batch=J;
 EOF

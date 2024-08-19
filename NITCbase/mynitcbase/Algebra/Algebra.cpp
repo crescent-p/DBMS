@@ -3,7 +3,7 @@
 #include <cstring>
 #include <stdio.h>
 #include <string>
-
+#include <iostream>
 
 
 bool isNumber(char* str);
@@ -13,7 +13,7 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE], char attr
 		return E_RELNOTOPEN;
 	}
 
-	AttrCatEntry attrCatEntry;
+	AttrCatEntry attrCatEntry = *(new AttrCatEntry);
 	int res = AttrCacheTable::getAttrCatEntry( srcRelId, attr, &attrCatEntry);
 	if(res == E_ATTRNOTEXIST){
 		return res;
@@ -33,9 +33,9 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE], char attr
 	RelCacheTable::resetSearchIndex(srcRelId);
 
 	RelCatEntry relCatEntry;
-	RelCacheTable::getRelCatEntry(RELCAT_RELID, &relCatEntry);
+	RelCacheTable::getRelCatEntry(srcRelId, &relCatEntry);
 
-	printf("|");
+	// printf("|");
 	for(int i = 0; i < relCatEntry.numAttrs; i++){
 		AttrCatEntry attrCatEntry;
 		AttrCacheTable::getAttrCatEntry(srcRelId ,i, &attrCatEntry);
@@ -44,20 +44,27 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE], char attr
 	printf("\n");
 	while(true){
 		RecId searchRes = BlockAccess::linearSearch(srcRelId, attr, attrVal, op);
+		// std::cout<<searchRes.block<<' '<<searchRes.slot<<std::endl;
 		if(searchRes.block != -1 && searchRes.slot != -1){
 			RecBuffer blockBuffer(searchRes.block);
-			Attribute selectAttr[relCatEntry.numAttrs];
+			
+			HeadInfo headInfo;
+			blockBuffer.getHeader(&headInfo);
+
+			Attribute selectAttr[headInfo.numAttrs];
 			blockBuffer.getRecord(selectAttr,searchRes.slot);
 
-			for(int i = 0; i < relCatEntry.numAttrs; i++){
-				AttrCatEntry attrCatEntry;
-				AttrCacheTable::getAttrCatEntry(srcRelId ,i, &attrCatEntry);
-				if(attrCatEntry.attrType == NUMBER){
-					printf(" %d | ", (int)selectAttr[i].nVal);
-				}else{
-					printf(" %s | ", selectAttr[i].sVal);
+			for(int i = 0; i < headInfo.numAttrs; i++){
+				int outed = printf("%s", selectAttr[i].sVal);
+				// std::cout<<outed<<std::endl;
+				if(outed){
+					printf(" |");
+				}
+				if(outed == 0){
+					printf(" %d |", (int)selectAttr[i].nVal);
+				}
 			}
-		}printf("\n");
+			printf("\n");
 		
 		}else{
 			break;

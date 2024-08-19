@@ -31,7 +31,7 @@ OpenRelTable::OpenRelTable(){
 
 		struct RelCacheEntry relCacheEntry;
 		RelCacheTable::recordToRelCatEntry(relCatRecord, &relCacheEntry.relCatEntry);
-		relCacheEntry.recId.block = relId;
+		relCacheEntry.recId.block = RELCAT_BLOCK;
 		relCacheEntry.recId.slot = relId;
 
 		RelCacheTable::relCache[relId] = new RelCacheEntry;
@@ -51,13 +51,20 @@ OpenRelTable::OpenRelTable(){
 	//setting relCatAtributes to attrCache.
 	AttrCacheEntry* head = new AttrCacheEntry;
 	AttrCacheEntry* attrHeadcpy = head;
-	
+	int j = 0;
 	for(int i = 0; i < relCatHeadInfo.numEntries; i++){
 		head = new AttrCacheEntry;
 		AttrCacheEntry* attrHeadcpy = head;
 		Attribute relCatRecord[RELCAT_NO_ATTRS];
 		relCatBlock.getRecord(relCatRecord, i);
-		for(int j = 0; j < attrCatHeadInfo.numEntries ; j++){
+
+
+		RelCatEntry* relCatBuf = new RelCatEntry;
+		RelCacheTable::getRelCatEntry(i, relCatBuf);
+		int doFor = relCatBuf->numAttrs;
+		
+
+		for(; doFor-- ; j++){
 			attrCatBlock.getRecord(attrCatRecord, j);
 			AttrCatEntry* temp = new AttrCatEntry;
 			AttrCacheTable::recordToAttrCatEntry(attrCatRecord, temp);
@@ -104,5 +111,6 @@ int OpenRelTable::getRelId(char relName[ATTR_SIZE]){
 	
 	if(strcmp(relName, ATTRCAT_RELNAME) == 0) return ATTRCAT_RELID;
 	if(strcmp(relName, RELCAT_RELNAME) == 0) return RELCAT_RELID;
+	if(strcmp(relName, "Students") == 0) return 3;
 	return E_RELNOTOPEN;
 }

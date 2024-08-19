@@ -1,6 +1,7 @@
 #include "AttrCacheTable.h"
 
 #include <cstring>
+#include <stdio.h>
 
 AttrCacheEntry* AttrCacheTable::attrCache[MAX_OPEN];
 
@@ -44,14 +45,17 @@ int AttrCacheTable::getAttrCatEntry(int relId, char attrName[ATTR_SIZE], AttrCat
 		return E_RELNOTOPEN;
 	}
 	for(AttrCacheEntry* entry = attrCache[relId]; entry != nullptr; entry = entry->next){
-		if(entry == nullptr) return E_ATTRNOTEXIST;
+		if(entry == nullptr ) return E_ATTRNOTEXIST;
+		if(entry->attrCatEntry.attrName[0] == '\0') return E_ATTRNOTEXIST;
+		printf("%s\n", entry->attrCatEntry.attrName);
 		if(strcmp(entry->attrCatEntry.attrName, attrName) == 0){
-			strcpy(attrCatBuf->relName, entry->attrCatEntry.relName); 
-			strcpy(attrCatBuf->attrName, entry->attrCatEntry.attrName);
-			attrCatBuf->attrType = entry->attrCatEntry.attrType;
-			attrCatBuf->primaryFlag = entry->attrCatEntry.primaryFlag;
-			attrCatBuf->rootBlock = entry->attrCatEntry.rootBlock;
-			attrCatBuf->offset = entry->attrCatEntry.offset;
+			*attrCatBuf = entry->attrCatEntry;
+			// strcpy(attrCatBuf->relName, entry->attrCatEntry.relName); 
+			// strcpy(attrCatBuf->attrName, entry->attrCatEntry.attrName);
+			// attrCatBuf->attrType = entry->attrCatEntry.attrType;
+			// attrCatBuf->primaryFlag = entry->attrCatEntry.primaryFlag;
+			// attrCatBuf->rootBlock = entry->attrCatEntry.rootBlock;
+			// attrCatBuf->offset = entry->attrCatEntry.offset;
 
 			return SUCCESS;
 		}

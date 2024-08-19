@@ -12,6 +12,13 @@ int main(int argc, char *argv[]) {
   Disk disk_run;
   OpenRelTable cache;
 
+
+   // RecBuffer mybuffer(6);
+   // HeadInfo* header = new HeadInfo;
+   // mybuffer.getHeader(header);
+
+   // printf("%d", header->numAttrs);
+
   return FrontendInterface::handleFrontend(argc, argv);
   // FrontendInterface::handleFrontend(argc, argv);
 }

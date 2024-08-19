@@ -36,13 +36,13 @@ int RecBuffer::getRecord(union Attribute *rec, int slotNum){
 	RecBuffer::getHeader(&head);
 
 	//std::cout<<slotNum<<std::endl;
-	while(slotNum >= head.numSlots){
-		slotNum -= head.numSlots;
-		blockNum = head.rblock;
-		RecBuffer::getHeader(&head);
-	}
+	// while(slotNum >= head.numSlots){
+	// 	slotNum -= head.numSlots;
+	// 	blockNum = head.rblock;
+	// 	RecBuffer::getHeader(&head);
+	// }
 
-	RecBuffer:getHeader(&head);
+	// RecBuffer:getHeader(&head);
 
 	int attrCount = head.numAttrs;
 	int slotCount = head.numSlots;
@@ -106,8 +106,13 @@ int BlockBuffer::loadBlockAndGetBufferPtr(unsigned char **bufferptr){
 }
 
 int compareAttrs(Attribute attr1, Attribute attr2, int attrType){
-	if(attrType == NUMBER){
-		return attr1.nVal < attr2.nVal;
+	double diff = 0;
+	if(attrType == STRING){
+		diff = strcmp(attr1.sVal, attr2.sVal);
+	}else{
+		diff = attr1.nVal - attr2.nVal;
 	}
-	return strcmp(attr1.sVal, attr2.sVal);
+	if(diff > 0) return 1;
+	if(diff < 0) return -1;
+	return 0;
 }

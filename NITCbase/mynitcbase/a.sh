@@ -1,5 +1,5 @@
 make
 ./nitcbase << EOF
-SELECT * FROM RELATIONCAT INTO null WHERE #Records>10;
+SELECT * FROM RELATIONCAT INTO null WHERE Name = Students;
 exit
 EOF
