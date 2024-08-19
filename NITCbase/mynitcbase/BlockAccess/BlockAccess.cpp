@@ -1,7 +1,7 @@
 #include "BlockAccess.h"
 
 #include <cstring>
-#include <stdio.h>
+// #include <stdio.h>
 
 RecId BlockAccess::linearSearch(int relId, char *attrName, Attribute attrVal, int op){
 	RecId* prevRecId = new RecId;

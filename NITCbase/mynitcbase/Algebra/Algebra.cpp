@@ -3,7 +3,7 @@
 #include <cstring>
 #include <stdio.h>
 #include <string>
-#include <iostream>
+// #include <iostream>
 
 
 bool isNumber(char* str);
@@ -13,7 +13,7 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE], char attr
 		return E_RELNOTOPEN;
 	}
 
-	AttrCatEntry attrCatEntry = *(new AttrCatEntry);
+	AttrCatEntry attrCatEntry;
 	int res = AttrCacheTable::getAttrCatEntry( srcRelId, attr, &attrCatEntry);
 	if(res == E_ATTRNOTEXIST){
 		return res;

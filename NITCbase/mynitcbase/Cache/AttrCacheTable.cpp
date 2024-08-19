@@ -47,7 +47,7 @@ int AttrCacheTable::getAttrCatEntry(int relId, char attrName[ATTR_SIZE], AttrCat
 	for(AttrCacheEntry* entry = attrCache[relId]; entry != nullptr; entry = entry->next){
 		if(entry == nullptr ) return E_ATTRNOTEXIST;
 		if(entry->attrCatEntry.attrName[0] == '\0') return E_ATTRNOTEXIST;
-		printf("%s\n", entry->attrCatEntry.attrName);
+		// printf("%s\n", entry->attrCatEntry.attrName);
 		if(strcmp(entry->attrCatEntry.attrName, attrName) == 0){
 			*attrCatBuf = entry->attrCatEntry;
 			// strcpy(attrCatBuf->relName, entry->attrCatEntry.relName); 
