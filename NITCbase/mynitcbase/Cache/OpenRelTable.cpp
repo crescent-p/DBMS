@@ -31,7 +31,7 @@ OpenRelTable::OpenRelTable(){
 
 		struct RelCacheEntry relCacheEntry;
 		RelCacheTable::recordToRelCatEntry(relCatRecord, &relCacheEntry.relCatEntry);
-		relCacheEntry.recId.block = RELCAT_BLOCK;
+		relCacheEntry.recId.block = relId + RELCAT_BLOCK;
 		relCacheEntry.recId.slot = relId;
 
 		RelCacheTable::relCache[relId] = new RelCacheEntry;
@@ -46,6 +46,43 @@ OpenRelTable::OpenRelTable(){
 
 	HeadInfo attrCatHeadInfo;
 	attrCatBlock.getHeader(&attrCatHeadInfo);
+
+	// for(int i = 0; i < relCatHeadInfo.numEntries; i++){
+	// 	RelCatEntry relCatEntry = *(new RelCatEntry);
+		
+	// 	int res = RelCacheTable::getRelCatEntry(i, &relCatEntry);
+	// 	if(res != SUCCESS){
+	// 		return;
+	// 	}
+	// 	RecBuffer mybuffer(relCatEntry.firstBlk);
+
+	// 	HeadInfo headInfo;
+	// 	mybuffer.getHeader(&headInfo);
+
+	// 	int numOfEntries = headInfo.numEntries;
+
+	// 	AttrCacheEntry* head = new AttrCacheEntry;
+	// 	AttrCacheEntry* headCpy = head;
+
+	// 	for(int j = 0; j < numOfEntries; j++){
+	// 		Attribute* nextAttribute= new Attribute[headInfo.numAttrs]; 
+	// 		int res = mybuffer.getRecord(nextAttribute, j);
+	// 		if(res != SUCCESS){
+	// 			return;
+	// 		}
+	// 		AttrCatEntry* attrCatEntry = new AttrCatEntry;
+	// 		AttrCacheTable::recordToAttrCatEntry(nextAttribute, attrCatEntry);
+
+	// 		head->recId.slot = j;
+	// 		head->recId.block = i;
+	// 		head->next = new AttrCacheEntry;
+	// 		head = head->next;
+
+	// 	}
+	// 	head = NULL;
+
+	// 	AttrCacheTable::attrCache[i] = headCpy;
+	// }
 
 
 	//setting relCatAtributes to attrCache.
@@ -78,10 +115,11 @@ OpenRelTable::OpenRelTable(){
 					head = head->next;	
 				}
 		}  
-		head = NULL;
+		//head = NULL;
 
 		AttrCacheTable::attrCache[i] = attrHeadcpy;
 	}
+
 
 
 }
@@ -111,6 +149,6 @@ int OpenRelTable::getRelId(char relName[ATTR_SIZE]){
 	
 	if(strcmp(relName, ATTRCAT_RELNAME) == 0) return ATTRCAT_RELID;
 	if(strcmp(relName, RELCAT_RELNAME) == 0) return RELCAT_RELID;
-	if(strcmp(relName, "Students") == 0) return 3;
+	if(strcmp(relName, "Students") == 0) return 2;
 	return E_RELNOTOPEN;
 }

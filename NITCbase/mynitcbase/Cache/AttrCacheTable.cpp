@@ -15,7 +15,10 @@ int AttrCacheTable::getAttrCatEntry(int relId, int attrOffset, AttrCatEntry* att
 	}
 
 	for(AttrCacheEntry* entry = AttrCacheTable::attrCache[relId]; entry != nullptr; entry = entry->next){
-		if(entry != nullptr && entry->attrCatEntry.offset == attrOffset){
+		if(entry == nullptr ) return E_ATTRNOTEXIST;
+		
+		if(entry->attrCatEntry.attrName[0] == '\0') return E_ATTRNOTEXIST;
+		if(entry->attrCatEntry.offset == attrOffset){
 
 			*attrCatBuf = entry->attrCatEntry;
 

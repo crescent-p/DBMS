@@ -13,8 +13,10 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE], char attr
 		return E_RELNOTOPEN;
 	}
 
-	AttrCatEntry attrCatEntry;
-	int res = AttrCacheTable::getAttrCatEntry( srcRelId, attr, &attrCatEntry);
+
+
+	AttrCatEntry attrCatEntry = *(new AttrCatEntry);
+	int res = AttrCacheTable::getAttrCatEntry(srcRelId, attr, &attrCatEntry);
 	if(res == E_ATTRNOTEXIST){
 		return res;
 	}
@@ -32,7 +34,7 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE], char attr
 	}
 	RelCacheTable::resetSearchIndex(srcRelId);
 
-	RelCatEntry relCatEntry;
+	RelCatEntry relCatEntry = *(new RelCatEntry);
 	RelCacheTable::getRelCatEntry(srcRelId, &relCatEntry);
 
 	// printf("|");
@@ -42,7 +44,9 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE], char attr
 		printf("%s |", attrCatEntry.attrName);
 	}
 	printf("\n");
+	RelCacheTable::resetSearchIndex(srcRelId);
 	while(true){
+		
 		RecId searchRes = BlockAccess::linearSearch(srcRelId, attr, attrVal, op);
 		// std::cout<<searchRes.block<<' '<<searchRes.slot<<std::endl;
 		if(searchRes.block != -1 && searchRes.slot != -1){
