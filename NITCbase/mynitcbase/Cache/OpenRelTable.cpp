@@ -115,7 +115,7 @@ OpenRelTable::OpenRelTable(){
 					head = head->next;	
 				}
 		}  
-		//head = NULL;
+		head = NULL;
 
 		AttrCacheTable::attrCache[i] = attrHeadcpy;
 	}

@@ -36,13 +36,13 @@ int RecBuffer::getRecord(union Attribute *rec, int slotNum){
 	RecBuffer::getHeader(&head);
 
 	//std::cout<<slotNum<<std::endl;
-	// while(slotNum >= head.numSlots){
-	// 	slotNum -= head.numSlots;
-	// 	blockNum = head.rblock;
-	// 	RecBuffer::getHeader(&head);
-	// }
+	while(slotNum >= head.numSlots){
+		slotNum -= head.numSlots;
+		blockNum = head.rblock;
+		RecBuffer::getHeader(&head);
+	}
 
-	// RecBuffer:getHeader(&head);
+	RecBuffer:getHeader(&head);
 
 	int attrCount = head.numAttrs;
 	int slotCount = head.numSlots;
