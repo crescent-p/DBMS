@@ -27,7 +27,10 @@ OpenRelTable::OpenRelTable(){
 
 	for(int relId = 0; relId < relCatHeadInfo.numEntries; relId++){
 		Attribute relCatRecord[RELCAT_NO_ATTRS];
-		relCatBlock.getRecord(relCatRecord, relId);
+		int ret = relCatBlock.getRecord(relCatRecord, relId);
+		if(ret != SUCCESS){
+			continue;
+		}
 
 		struct RelCacheEntry relCacheEntry;
 		RelCacheTable::recordToRelCatEntry(relCatRecord, &relCacheEntry.relCatEntry);
@@ -93,12 +96,16 @@ OpenRelTable::OpenRelTable(){
 		head = new AttrCacheEntry;
 		AttrCacheEntry* attrHeadcpy = head;
 		Attribute relCatRecord[RELCAT_NO_ATTRS];
-		relCatBlock.getRecord(relCatRecord, i);
+		int ret = relCatBlock.getRecord(relCatRecord, i);	
+		
+		if(ret != SUCCESS){
+			continue;
+		}
 
 
 		RelCatEntry* relCatBuf = new RelCatEntry;
 		RelCacheTable::getRelCatEntry(i, relCatBuf);
-		int doFor = relCatBuf->numAttrs;
+		int doFor = relCatBuf->numAttrs + 1;
 		
 
 		for(; doFor-- ; j++){
@@ -106,7 +113,7 @@ OpenRelTable::OpenRelTable(){
 			AttrCatEntry* temp = new AttrCatEntry;
 			AttrCacheTable::recordToAttrCatEntry(attrCatRecord, temp);
 
-			if(strcmp(relCatRecord[RELCAT_REL_NAME_INDEX].sVal, attrCatRecord[ATTRCAT_REL_NAME_INDEX].sVal )== 0 ){		
+			if(strcmp(relCatRecord[RELCAT_REL_NAME_INDEX].sVal, attrCatRecord[ATTRCAT_REL_NAME_INDEX].sVal )== 0 || 1){		
 					if(temp == nullptr) break;
 					head->attrCatEntry = *temp;
 					head->recId.slot = j;

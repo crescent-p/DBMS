@@ -32,13 +32,20 @@ int BlockBuffer::getHeader(struct HeadInfo *head){
 }
 using namespace std;
 int RecBuffer::getRecord(union Attribute *rec, int slotNum){
+		
+	int startBlock = blockNum;
+
 	struct HeadInfo head;
 	RecBuffer::getHeader(&head);
 
 	//std::cout<<slotNum<<std::endl;
 	while(slotNum >= head.numSlots){
 		slotNum -= head.numSlots;
+		if(head.rblock == -1){
+			return E_NOTFOUND;
+		}
 		blockNum = head.rblock;
+
 		RecBuffer::getHeader(&head);
 	}
 
@@ -48,7 +55,7 @@ int RecBuffer::getRecord(union Attribute *rec, int slotNum){
 	int slotCount = head.numSlots;
 
 
-	unsigned char* buffer;
+	unsigned char* buffer = new unsigned char[BLOCK_SIZE];
 
 	// Disk::readBlock(buffer, this->blockNum);
 	int res = loadBlockAndGetBufferPtr(&buffer);
@@ -63,6 +70,8 @@ int RecBuffer::getRecord(union Attribute *rec, int slotNum){
 	unsigned char *slotPointer = (buffer + HEADER_SIZE + slotMapSize + recordSize * slotNum);
 	
 	memcpy(rec, slotPointer, recordSize);
+
+	blockNum = startBlock;
 
 	return SUCCESS;
 }
