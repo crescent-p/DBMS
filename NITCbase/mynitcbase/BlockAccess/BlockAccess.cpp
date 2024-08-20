@@ -10,7 +10,7 @@ RecId BlockAccess::linearSearch(int relId, char *attrName, Attribute attrVal, in
 	RecId currRecId;
 	
 	RelCatEntry* firstRel = new RelCatEntry;
-	int ret = RelCacheTable::getRelCatEntry(relId,firstRel);
+	int ret = RelCacheTable::getRelCatEntry(relId, firstRel);
 	
 	if(prevRecId->block == -1 && prevRecId->slot == -1){
 		
@@ -35,24 +35,24 @@ RecId BlockAccess::linearSearch(int relId, char *attrName, Attribute attrVal, in
 			return {-1, -1};
 		}
 
-
-		union Attribute record[headInfo.numAttrs];
-		recBuffer.getRecord(record, currRecId.slot);
-		
-		unsigned char* slotMap = new unsigned char[headInfo.numSlots];
-		recBuffer.getSlotMap(slotMap);
-
-
 		if(currRecId.slot >= headInfo.numSlots){
 			currRecId.slot = 0;
 			currRecId.block = headInfo.rblock;
 			continue;
 		}
 
+		union Attribute record[headInfo.numAttrs];
+		recBuffer.getRecord(record, currRecId.slot);
+		
+		unsigned char* slotMap = new unsigned char[headInfo.numSlots];
+		recBuffer.getSlotMap(slotMap);
+		
+
 		if(slotMap[currRecId.slot] == SLOT_UNOCCUPIED){
 			currRecId.slot++;
 			continue;
 		}
+
 
 		AttrCatEntry* currAttrEntry = new AttrCatEntry;
 		AttrCacheTable::getAttrCatEntry(relId, attrName, currAttrEntry);
@@ -69,12 +69,6 @@ RecId BlockAccess::linearSearch(int relId, char *attrName, Attribute attrVal, in
 		            (op == GT && cmpVal > 0)  ||    
 		            (op == GE && cmpVal >= 0) )      
         ){
-
-        	if(slotMap[currRecId.slot] == SLOT_UNOCCUPIED){
-				currRecId.slot++;
-				continue;
-			}
-
 
 			RelCacheTable::setSearchIndex(relId, &currRecId);
 

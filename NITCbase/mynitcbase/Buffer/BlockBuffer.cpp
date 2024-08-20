@@ -77,7 +77,7 @@ int RecBuffer::getRecord(union Attribute *rec, int slotNum){
 }
 
 int RecBuffer::getSlotMap(unsigned char *slotMap){
-	unsigned char* blockBuffPtr;
+	unsigned char* blockBuffPtr = new unsigned char[BLOCK_SIZE];
 
 	int res = BlockBuffer::loadBlockAndGetBufferPtr(&blockBuffPtr);
 
@@ -92,7 +92,7 @@ int RecBuffer::getSlotMap(unsigned char *slotMap){
 
 	unsigned char* slotMapPtr = blockBuffPtr + HEADER_SIZE;
 
-	memcpy(slotMapPtr, slotMap, slotCount);
+	memcpy(slotMap, slotMapPtr, slotCount);
 
 	return SUCCESS;
 }

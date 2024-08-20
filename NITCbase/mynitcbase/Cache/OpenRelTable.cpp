@@ -105,7 +105,7 @@ OpenRelTable::OpenRelTable(){
 
 		RelCatEntry* relCatBuf = new RelCatEntry;
 		RelCacheTable::getRelCatEntry(i, relCatBuf);
-		int doFor = relCatBuf->numAttrs + 1;
+		int doFor = relCatBuf->numAttrs;
 		
 
 		for(; doFor-- ; j++){

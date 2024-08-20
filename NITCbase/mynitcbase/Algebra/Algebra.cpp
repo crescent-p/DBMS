@@ -39,7 +39,7 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE], char attr
 
 	// printf("|");
 	for(int i = 0; i < relCatEntry.numAttrs; i++){
-		AttrCatEntry attrCatEntry;
+		AttrCatEntry attrCatEntry = *(new AttrCatEntry);
 		AttrCacheTable::getAttrCatEntry(srcRelId ,i, &attrCatEntry);
 		printf("%s |", attrCatEntry.attrName);
 	}
