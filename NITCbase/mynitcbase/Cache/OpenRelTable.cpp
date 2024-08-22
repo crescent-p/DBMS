@@ -139,22 +139,22 @@ OpenRelTable::~OpenRelTable(){
 	free(RelCacheTable::relCache[ATTRCAT_RELID]);
 
 	//free all the linked list elements from attrCacheTabel.
-	AttrCacheEntry* head =  AttrCacheTable::attrCache[RELCAT_RELID];
+	// AttrCacheEntry* head =  AttrCacheTable::attrCache[RELCAT_RELID];
 	// while(head != nullptr){
 	// 	AttrCacheEntry* temp = head->next;
 	// 	free(head);
 	// 	head = temp;
 	// }
- 	head =  AttrCacheTable::attrCache[ATTRCAT_RELID];
-	while(head != nullptr){
-		AttrCacheEntry* temp = head->next;
-		free(head);
-		head = temp;
-	}
+ 	// head =  AttrCacheTable::attrCache[ATTRCAT_RELID];
+	// while(head != nullptr){
+	// 	AttrCacheEntry* temp = head->next;
+	// 	free(head);
+	// 	head = temp;
+	// }
 }
 int OpenRelTable::getFreeOpenRelTableEntry(){
 	for(int i = 0; i < MAX_OPEN; i++){
-		if(tableMetaInfo[i].free){
+		if(tableMetaInfo[i].free == true){
 			return i;
 		}
 	}
@@ -182,9 +182,15 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE]){
 	}
 
 	int freeSlot = OpenRelTable::getFreeOpenRelTableEntry();
+
 	if(freeSlot == E_CACHEFULL){
 		return E_CACHEFULL;
 	}
+
+
+	OpenRelTable::tableMetaInfo[freeSlot].free = false;
+	strcpy(tableMetaInfo[freeSlot].relName, relName);
+
 
 	RelCacheTable::resetSearchIndex(RELCAT_RELID);
 	Attribute relAttribute = *(new Attribute);
@@ -257,8 +263,6 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE]){
 		AttrCacheTable::attrCache[freeSlot] = attrCacheEntry;
 	}
 
-	OpenRelTable::tableMetaInfo[slotNum].free = false;
-	strcpy(tableMetaInfo[slotNum].relName, relName);
 
 	return SUCCESS;
 
