@@ -55,7 +55,11 @@ RecId BlockAccess::linearSearch(int relId, char *attrName, Attribute attrVal, in
 
 
 		AttrCatEntry* currAttrEntry = new AttrCatEntry;
-		AttrCacheTable::getAttrCatEntry(relId, attrName, currAttrEntry);
+		int ret = AttrCacheTable::getAttrCatEntry(relId, attrName, currAttrEntry);
+
+		if(ret != SUCCESS){
+			return {-1, -1};
+		}
 
 		Attribute currAttrVal = record[currAttrEntry->offset];
 
