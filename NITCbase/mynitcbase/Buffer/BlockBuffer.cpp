@@ -32,7 +32,22 @@ int BlockBuffer::getHeader(struct HeadInfo *head){
 }
 using namespace std;
 int RecBuffer::getRecord(union Attribute *rec, int slotNum){
+		
+	int startBlock = blockNum;
+
 	struct HeadInfo head;
+	RecBuffer::getHeader(&head);
+
+	//std::cout<<slotNum<<std::endl;
+	while(slotNum >= head.numSlots){
+		slotNum -= head.numSlots;
+		if(head.rblock == -1){
+			return E_NOTFOUND;
+		}
+		blockNum = head.rblock;
+
+		RecBuffer::getHeader(&head);
+	}
 
 	RecBuffer:getHeader(&head);
 
@@ -40,7 +55,7 @@ int RecBuffer::getRecord(union Attribute *rec, int slotNum){
 	int slotCount = head.numSlots;
 
 
-	unsigned char* buffer;
+	unsigned char* buffer = new unsigned char[BLOCK_SIZE];
 
 	// Disk::readBlock(buffer, this->blockNum);
 	int res = loadBlockAndGetBufferPtr(&buffer);
@@ -56,9 +71,31 @@ int RecBuffer::getRecord(union Attribute *rec, int slotNum){
 	
 	memcpy(rec, slotPointer, recordSize);
 
+	blockNum = startBlock;
+
 	return SUCCESS;
 }
 
+int RecBuffer::getSlotMap(unsigned char *slotMap){
+	unsigned char* blockBuffPtr = new unsigned char[BLOCK_SIZE];
+
+	int res = BlockBuffer::loadBlockAndGetBufferPtr(&blockBuffPtr);
+
+	if(res != SUCCESS){
+		return res;
+	}
+
+	HeadInfo headInfo;
+	RecBuffer::getHeader(&headInfo);
+
+	int slotCount = headInfo.numSlots;
+
+	unsigned char* slotMapPtr = blockBuffPtr + HEADER_SIZE;
+
+	memcpy(slotMap, slotMapPtr, slotCount);
+
+	return SUCCESS;
+}
 
 int BlockBuffer::loadBlockAndGetBufferPtr(unsigned char **bufferptr){
 	int bufferNum = StaticBuffer::getBufferNum(this->blockNum);
@@ -75,4 +112,16 @@ int BlockBuffer::loadBlockAndGetBufferPtr(unsigned char **bufferptr){
 	*bufferptr = StaticBuffer::blocks[bufferNum];
 
 	return SUCCESS;
+}
+
+int compareAttrs(Attribute attr1, Attribute attr2, int attrType){
+	double diff = 0;
+	if(attrType == STRING){
+		diff = strcmp(attr1.sVal, attr2.sVal);
+	}else{
+		diff = attr1.nVal - attr2.nVal;
+	}
+	if(diff > 0) return 1;
+	if(diff < 0) return -1;
+	return 0;
 }

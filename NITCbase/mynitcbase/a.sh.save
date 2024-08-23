@@ -1,0 +1,4 @@
+make
+./nitcbase << EOF
+SELECT * FROM ATTRIBUTECAT INTO null WHERE RelName=RELATIONCAT;
+EOF
