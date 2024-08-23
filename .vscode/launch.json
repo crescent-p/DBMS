@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "Debug nitcbase",
-      "cwd": "${workspaceFolder}",
+      "cwd": "${workspaceFolder}/NITCbase/mynitcbase",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/NITCbase/mynitcbase/nitcbase-debug",

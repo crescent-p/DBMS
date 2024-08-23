@@ -1,0 +1,6 @@
+make mode=debug
+gdb nitcbase-debug << EO
+SELECT * FROM Students INTO null WHERE Batch=J;
+break $1
+run
+EOF
