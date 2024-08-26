@@ -33,7 +33,7 @@ class RelCacheTable {
   static int getSearchIndex(int relId, RecId *searchIndex);
   static int setSearchIndex(int relId, RecId *searchIndex);
   static int resetSearchIndex(int relId);
-
+  static int findSlotOfRelation(char relName[ATTR_SIZE]);
  private:
   // field
   static RelCacheEntry *relCache[MAX_OPEN];

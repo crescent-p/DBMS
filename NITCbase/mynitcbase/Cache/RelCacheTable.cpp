@@ -18,6 +18,25 @@ int RelCacheTable::getRelCatEntry(int relId, RelCatEntry* relCatBuf){
 	return SUCCESS;
 }
 
+int RelCacheTable::findSlotOfRelation(char relName[ATTR_SIZE]){
+
+	RecBuffer relBlock(RELCAT_BLOCK);
+
+	HeadInfo headInfo;
+	relBlock.getHeader(&headInfo);
+
+	for(int i = 0; i < headInfo.numEntries; i++){
+		Attribute* rels = new Attribute[ATTR_SIZE];
+		relBlock.getRecord(rels, i);
+		if(strcmp(relName, rels[RELCAT_REL_NAME_INDEX].sVal) == 0) {
+			return i;
+		}
+	}
+
+	return E_RELNOTEXIST;
+}
+
+
 void RelCacheTable::recordToRelCatEntry(union Attribute record[RELCAT_NO_ATTRS],
 									RelCatEntry* relCatEntry){
 	strcpy(relCatEntry->relName, record[RELCAT_REL_NAME_INDEX].sVal);

@@ -7,26 +7,57 @@ struct BufferMetaInfo StaticBuffer::metainfo[BUFFER_CAPACITY];
 StaticBuffer::StaticBuffer(){
 	for(int bufferIndex = 0; bufferIndex < BUFFER_CAPACITY; bufferIndex++){
 		metainfo[bufferIndex].free = true;
+		metainfo[bufferIndex].dirty = false;
+		metainfo[bufferIndex].blockNum = -1;
+		metainfo[bufferIndex].timeStamp = -1;
+
 	}
 }
 
-StaticBuffer::~StaticBuffer(){}
+StaticBuffer::~StaticBuffer(){
+	for(int i = 0; i < BUFFER_CAPACITY; i++){
+		if(metainfo[i].free == false){
+			if(metainfo[i].dirty = true){
+				Disk::writeBlock(blocks[i], metainfo[i].blockNum);
+			}
+		}
+	}
+}
 
 int StaticBuffer::getFreeBuffer(int blockNum){
 	if(blockNum < 0 || blockNum > DISK_BLOCKS){
 		return E_OUTOFBOUND;
 	}
-	int allocatedBuffer;
-	for(int bufferIndex = 0; bufferIndex < BUFFER_CAPACITY; bufferIndex++){
-		if(metainfo[bufferIndex].free == true){
-			allocatedBuffer = bufferIndex;
+	int allocatedBuffer = -1;
+	for(int i = 0; i < BUFFER_CAPACITY; i++){
+		if(metainfo[i].free == false){
+			metainfo[i].timeStamp++;
+		}
+	}
+
+
+	for(int i = 0; i < BUFFER_CAPACITY; i++){
+		if(metainfo[i].free == false){
+			allocatedBuffer = i;
 			break;
 		}
 	}
-	metainfo[allocatedBuffer].free = false;
-	metainfo[allocatedBuffer].blockNum = blockNum;
+
+	if(allocatedBuffer == -1){
+		int highestIndex = 0;
+		for(int i = 0; i < BUFFER_CAPACITY; i++){
+			if(metainfo[i].timeStamp > highestIndex){
+				highestIndex = i;
+			}
+		}
+		if(metainfo[highestIndex].dirty == true){
+			Disk::writeBlock(blocks[highestIndex], metainfo[highestIndex].blockNum);
+		}
+		return highestIndex;
+	}
 
 	return allocatedBuffer;
+
 }
 
 int StaticBuffer::getBufferNum(int blockNum){
@@ -39,4 +70,15 @@ int StaticBuffer::getBufferNum(int blockNum){
 		}
 	}
 	return E_BLOCKNOTINBUFFER;
+}
+
+int StaticBuffer::setDirtyBit(int blockNum){
+	int index = StaticBuffer::getBufferNum(blockNum);
+
+	if(index == E_OUTOFBOUND) return E_OUTOFBOUND;
+	if(index == E_BLOCKNOTINBUFFER) return E_BLOCKNOTINBUFFER;
+
+	metainfo[index].dirty = true;
+
+	return SUCCESS;
 }
