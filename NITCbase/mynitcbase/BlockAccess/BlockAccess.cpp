@@ -89,13 +89,12 @@ RecId BlockAccess::linearSearch(int relId, char *attrName, Attribute attrVal, in
 
 int BlockAccess::renameRelation(char oldName[ATTR_SIZE], char newName[ATTR_SIZE]){
 	
-
-
 	Attribute attr;
 	char* relName = new char[ATTR_SIZE];
 	RecId recId; 
 
 
+	strcpy(relName, RELCAT_ATTR_RELNAME);
 	strcpy(attr.sVal, newName);
 	RelCacheTable::resetSearchIndex(RELCAT_RELID);
 	recId = BlockAccess::linearSearch(RELCAT_RELID, relName, attr, EQ);
@@ -107,9 +106,9 @@ int BlockAccess::renameRelation(char oldName[ATTR_SIZE], char newName[ATTR_SIZE]
 
 
 	strcpy(attr.sVal, oldName);
-	strcpy(relName, RELCAT_ATTR_RELNAME);
+	strcpy(relName, ATTRCAT_ATTR_RELNAME);
 	RelCacheTable::resetSearchIndex(RELCAT_RELID);
-	BlockAccess::linearSearch(RELCAT_RELID, relName, attr, EQ);
+	recId = BlockAccess::linearSearch(RELCAT_RELID, relName, attr, EQ);
 
 	if(recId.slot == -1 && recId.block == -1){
 		return E_RELNOTEXIST;
@@ -118,11 +117,22 @@ int BlockAccess::renameRelation(char oldName[ATTR_SIZE], char newName[ATTR_SIZE]
 
 	RecBuffer recBuffer(RELCAT_BLOCK);
 
-	Attribute *relRecord = new Attribute[RELCAT_NO_ATTRS];
+	HeadInfo headInfo = *(new HeadInfo);
+
+	recBuffer.getHeader(&headInfo);
+
+	Attribute *relRecord = new Attribute[headInfo.numAttrs];
 	recBuffer.getRecord(relRecord, recId.slot);
 
 	strcpy(relRecord[RELCAT_REL_NAME_INDEX].sVal, newName);
 	recBuffer.setRecord(relRecord, recId.slot);
+
+//tesing if setRecord is working fine
+	RecBuffer recBufferr(RELCAT_BLOCK);
+
+	recBufferr.getHeader(&headInfo);
+	recBufferr.getRecord(relRecord, recId.slot);
+////
 
 	
 	RelCacheTable::resetSearchIndex(ATTRCAT_RELID);
@@ -141,8 +151,7 @@ int BlockAccess::renameRelation(char oldName[ATTR_SIZE], char newName[ATTR_SIZE]
 		attrBuffer.setRecord(relRecord, recId.slot);
 		recId = BlockAccess::linearSearch(ATTRCAT_RELID, relName, attr, EQ);
 	}
-
-
+	
 	return SUCCESS;
 }
 

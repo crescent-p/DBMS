@@ -102,12 +102,10 @@ int BlockBuffer::loadBlockAndGetBufferPtr(unsigned char **bufferptr){
 
 	if(bufferNum != E_BLOCKNOTINBUFFER){
 		for(int i = 0; i < BLOCK_SIZE; i++){
-			if(i == bufferNum){
-				StaticBuffer::metainfo[i].timeStamp = 0;
-			}else{
-				StaticBuffer::metainfo[i].timeStamp++;
-			}
+			if(StaticBuffer::metainfo[i].free == false)
+				StaticBuffer::metainfo[i].timeStamp++;	
 		}
+		StaticBuffer::metainfo[bufferNum].timeStamp = 0;
 	}else{
 		bufferNum = StaticBuffer::getFreeBuffer(this->blockNum);
 
@@ -115,10 +113,14 @@ int BlockBuffer::loadBlockAndGetBufferPtr(unsigned char **bufferptr){
 			return E_OUTOFBOUND;
 		}
 
-		Disk::readBlock(StaticBuffer::blocks[bufferNum], this->blockNum);
-		
+		Disk::readBlock(StaticBuffer::blocks[bufferNum], this->blockNum);		
 	}
+
 	*bufferptr = StaticBuffer::blocks[bufferNum];
+	StaticBuffer::metainfo[bufferNum].blockNum = this->blockNum;
+	StaticBuffer::metainfo[bufferNum].free = false;
+
+	StaticBuffer::setDirtyBit(bufferNum);
 
 	return SUCCESS;
 }
@@ -147,20 +149,32 @@ int RecBuffer::setRecord(union Attribute *rec, int slotNum){
 	HeadInfo headInfo = *(new HeadInfo);
 	getHeader(&headInfo);
 
-	int numOfAttrs = headInfo.numAttrs;
-	int numOfSlots = headInfo.numSlots;
 
-	if(slotNum < 0 || slotNum >= numOfSlots){
+	while(slotNum >= headInfo.numSlots){
+		slotNum -= headInfo.numSlots;
+		if(headInfo.rblock == -1){
+			return E_NOTFOUND;
+		}
+		blockNum = headInfo.rblock;
+
+		RecBuffer::getHeader(&headInfo);
+	}
+
+	int attrCount = headInfo.numAttrs;
+	int slotCount = headInfo.numSlots;
+
+	if(slotNum < 0 || slotNum >= slotCount){
 		return E_OUTOFBOUND;
 	}
 
-	bufferPtr = bufferPtr + HEADER_SIZE + (numOfAttrs*ATTR_SIZE)*slotNum;
+	int recordSize = attrCount * ATTR_SIZE;
+	//each slot require one byte for slotCount
+	//recordSize = attrCount* ATTR_size
+	int slotMapSize = slotCount;
+	bufferPtr = (bufferPtr + HEADER_SIZE + slotMapSize + recordSize * slotNum);
 
 
-	memcpy(bufferPtr, rec, numOfAttrs*ATTR_SIZE);
-
-
-	StaticBuffer::setDirtyBit(blockNum);
+	memcpy(bufferPtr, rec, recordSize);
 
 	return SUCCESS;	
 }
