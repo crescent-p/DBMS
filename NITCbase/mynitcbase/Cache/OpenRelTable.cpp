@@ -43,7 +43,7 @@ OpenRelTable::OpenRelTable(){
 		OpenRelTable::tableMetaInfo[relId].free = false;
 		strcpy(OpenRelTable::tableMetaInfo[relId].relName, relCatRecord[RELCAT_REL_NAME_INDEX].sVal);
 	}
-	
+
 
 
 	Attribute attrCatRecord[ATTRCAT_NO_ATTRS];
@@ -209,7 +209,7 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE]){
 	RelCatEntry* relCatEntry = new RelCatEntry;
 
 	int slotNum = 0;
-	Attribute *record= new Attribute[ATTR_SIZE];
+	Attribute* record = new Attribute[ATTR_SIZE];
 
 	//shoudl use slotMap and blockNum != -1 with nextBlock = rBlock for handling large number of relations.
 	for(; slotNum < headInfo.numEntries; slotNum++){
@@ -245,7 +245,7 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE]){
 	ret = attrBlock.getRecord(record, recordNum);
 
 	while(ret == SUCCESS){
-		if(strcmp(record[ATTRCAT_ATTR_NAME_INDEX].sVal, relName) == 0){
+		if(strcmp(record[ATTRCAT_REL_NAME_INDEX].sVal, relName) == 0){
 			AttrCacheTable::recordToAttrCatEntry(record, attrCatEntry);
 			head->attrCatEntry = *attrCatEntry;
 			head->dirty = false;
