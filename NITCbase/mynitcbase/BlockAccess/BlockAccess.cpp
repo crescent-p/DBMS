@@ -127,11 +127,11 @@ int BlockAccess::renameRelation(char oldName[ATTR_SIZE], char newName[ATTR_SIZE]
 	strcpy(relRecord[RELCAT_REL_NAME_INDEX].sVal, newName);
 	recBuffer.setRecord(relRecord, recId.slot);
 
-//tesing if setRecord is working fine
-	RecBuffer recBufferr(RELCAT_BLOCK);
+// //tesing if setRecord is working fine
+// 	RecBuffer recBufferr(RELCAT_BLOCK);
 
-	recBufferr.getHeader(&headInfo);
-	recBufferr.getRecord(relRecord, recId.slot);
+// 	recBufferr.getHeader(&headInfo);
+// 	recBufferr.getRecord(relRecord, recId.slot);
 ////
 
 	
