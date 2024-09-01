@@ -119,8 +119,9 @@ int BlockBuffer::loadBlockAndGetBufferPtr(unsigned char **bufferptr){
 	*bufferptr = StaticBuffer::blocks[bufferNum];
 	StaticBuffer::metainfo[bufferNum].blockNum = this->blockNum;
 	StaticBuffer::metainfo[bufferNum].free = false;
+	//StaticBuffer::metainfo[bufferNum].dirty = true;
 
-	StaticBuffer::setDirtyBit(bufferNum);
+	
 
 	return SUCCESS;
 }
@@ -175,6 +176,8 @@ int RecBuffer::setRecord(union Attribute *rec, int slotNum){
 
 
 	memcpy(bufferPtr, rec, recordSize);
+
+	StaticBuffer::setDirtyBit(this->blockNum);
 
 	return SUCCESS;	
 }
