@@ -37,7 +37,7 @@ int StaticBuffer::getFreeBuffer(int blockNum){
 
 
 	for(int i = 0; i < BUFFER_CAPACITY; i++){
-		if(metainfo[i].free == false){
+		if(metainfo[i].free == true){
 			allocatedBuffer = i;
 			break;
 		}
