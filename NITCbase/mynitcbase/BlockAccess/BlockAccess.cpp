@@ -93,6 +93,14 @@ int BlockAccess::renameRelation(char oldName[ATTR_SIZE], char newName[ATTR_SIZE]
 	char* relName = new char[ATTR_SIZE];
 	RecId recId; 
 
+	if(strcmp(newName, RELCAT_RELNAME) == 0 || strcmp(newName, ATTRCAT_RELNAME) ==0){
+		return E_NOTPERMITTED;
+	}
+	if(strcmp(oldName, RELCAT_RELNAME) == 0 || strcmp(oldName, ATTRCAT_RELNAME) ==0){
+		return E_NOTPERMITTED;
+	}
+
+
 
 	strcpy(relName, RELCAT_ATTR_RELNAME);
 	strcpy(attr.sVal, newName);
@@ -157,6 +165,10 @@ int BlockAccess::renameRelation(char oldName[ATTR_SIZE], char newName[ATTR_SIZE]
 
 
 int BlockAccess::renameAttribute(char *relName, char *oldName, char *newName){
+
+	if(strcmp(relName, RELCAT_RELNAME) == 0 || strcmp(relName, ATTRCAT_RELNAME) ==0){
+		return E_NOTPERMITTED;
+	}
 
 	RelCacheTable::resetSearchIndex(RELCAT_RELID);
 

@@ -15,13 +15,12 @@ StaticBuffer::StaticBuffer(){
 }
 
 StaticBuffer::~StaticBuffer(){
-	for(int i = 0; i < BUFFER_CAPACITY; i++){
-		if(metainfo[i].free == false){
-			if(metainfo[i].dirty == true){
-				Disk::writeBlock(blocks[i], metainfo[i].blockNum);
-			}
-		}
-	}
+	for (int bufferIndex = 0; bufferIndex < BUFFER_CAPACITY; bufferIndex++) {
+    if (metainfo[bufferIndex].free == false and
+        metainfo[bufferIndex].dirty == true) {
+      Disk::writeBlock(blocks[bufferIndex], metainfo[bufferIndex].blockNum);
+    }
+  }
 }
 
 int StaticBuffer::getFreeBuffer(int blockNum){
