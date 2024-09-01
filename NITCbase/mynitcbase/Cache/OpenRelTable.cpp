@@ -54,44 +54,6 @@ OpenRelTable::OpenRelTable(){
 	HeadInfo attrCatHeadInfo;
 	attrCatBlock.getHeader(&attrCatHeadInfo);
 
-	// for(int i = 0; i < relCatHeadInfo.numEntries; i++){
-	// 	RelCatEntry relCatEntry = *(new RelCatEntry);
-		
-	// 	int res = RelCacheTable::getRelCatEntry(i, &relCatEntry);
-	// 	if(res != SUCCESS){
-	// 		return;
-	// 	}
-	// 	RecBuffer mybuffer(relCatEntry.firstBlk);
-
-	// 	HeadInfo headInfo;
-	// 	mybuffer.getHeader(&headInfo);
-
-	// 	int numOfEntries = headInfo.numEntries;
-
-	// 	AttrCacheEntry* head = new AttrCacheEntry;
-	// 	AttrCacheEntry* headCpy = head;
-
-	// 	for(int j = 0; j < numOfEntries; j++){
-	// 		Attribute* nextAttribute= new Attribute[headInfo.numAttrs]; 
-	// 		int res = mybuffer.getRecord(nextAttribute, j);
-	// 		if(res != SUCCESS){
-	// 			return;
-	// 		}
-	// 		AttrCatEntry* attrCatEntry = new AttrCatEntry;
-	// 		AttrCacheTable::recordToAttrCatEntry(nextAttribute, attrCatEntry);
-
-	// 		head->recId.slot = j;
-	// 		head->recId.block = i;
-	// 		head->next = new AttrCacheEntry;
-	// 		head = head->next;
-
-	// 	}
-	// 	head = NULL;
-
-	// 	AttrCacheTable::attrCache[i] = headCpy;
-	// }
-
-
 	//setting relCatAtributes to attrCache.
 	AttrCacheEntry* head = new AttrCacheEntry;
 	AttrCacheEntry* attrHeadcpy = head;
@@ -138,6 +100,12 @@ OpenRelTable::~OpenRelTable(){
 	//free Relation cache tables.
 	free(RelCacheTable::relCache[RELCAT_RELID]);
 	free(RelCacheTable::relCache[ATTRCAT_RELID]);
+
+	for(int i = 2; i < MAX_OPEN; i++){
+		if(tableMetaInfo[i].free == false){
+			OpenRelTable::closeRel(i);
+		}
+	}
 
 	//free all the linked list elements from attrCacheTabel.
 	// AttrCacheEntry* head =  AttrCacheTable::attrCache[RELCAT_RELID];

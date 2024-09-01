@@ -1,5 +1,6 @@
 #include "StaticBuffer.h"
-
+#include <string.h>
+#include <stdio.h>
 
 unsigned char StaticBuffer::blocks[BUFFER_CAPACITY][BLOCK_SIZE];
 struct BufferMetaInfo StaticBuffer::metainfo[BUFFER_CAPACITY];
@@ -18,7 +19,12 @@ StaticBuffer::~StaticBuffer(){
 	for (int bufferIndex = 0; bufferIndex < BUFFER_CAPACITY; bufferIndex++) {
     if (metainfo[bufferIndex].free == false and
         metainfo[bufferIndex].dirty == true) {
-      Disk::writeBlock(blocks[bufferIndex], metainfo[bufferIndex].blockNum);
+			unsigned char* writeMem = new unsigned char[BLOCK_SIZE];
+			memcpy(writeMem, blocks[bufferIndex], BLOCK_SIZE);
+			for(int i = 0; i < BLOCK_SIZE; i++){
+				printf("%c", writeMem[i]);
+			}printf("\n");
+      	Disk::writeBlock(writeMem, metainfo[bufferIndex].blockNum);
     }
   }
 }
