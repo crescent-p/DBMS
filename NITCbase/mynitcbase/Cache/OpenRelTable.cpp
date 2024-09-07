@@ -248,6 +248,24 @@ int OpenRelTable::closeRel(int relId){
 		return E_OUTOFBOUND;
 	}
 
+	if(RelCacheTable::relCache[relId]->dirty == true){
+		RelCatEntry relCatEntry = *(new RelCatEntry);
+
+		RelCacheTable::getRelCatEntry(relId, &relCatEntry);
+
+		Attribute* record = new Attribute[RELCAT_NO_ATTRS];
+		RelCacheTable::relCatEntryToRecord(&relCatEntry, record);
+
+		RecId recId = RelCacheTable::relCache[relId]->recId;
+
+		RecBuffer relCatBuf(recId.block);
+		int ret = relCatBuf.setRecord(record, recId.slot);
+		
+		if(ret != SUCCESS){
+			return ret;
+		}	 
+	}
+
 	tableMetaInfo[relId].free = true;
 
 	free(AttrCacheTable::attrCache[relId]);

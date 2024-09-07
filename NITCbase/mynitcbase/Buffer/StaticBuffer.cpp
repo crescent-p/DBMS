@@ -4,28 +4,40 @@
 
 unsigned char StaticBuffer::blocks[BUFFER_CAPACITY][BLOCK_SIZE];
 struct BufferMetaInfo StaticBuffer::metainfo[BUFFER_CAPACITY];
+unsigned char StaticBuffer::blockAllocMap[DISK_BLOCKS];
+
 
 StaticBuffer::StaticBuffer(){
-	for(int bufferIndex = 0; bufferIndex < BUFFER_CAPACITY; bufferIndex++){
-		metainfo[bufferIndex].free = true;
-		metainfo[bufferIndex].dirty = false;
-		metainfo[bufferIndex].blockNum = -1;
-		metainfo[bufferIndex].timeStamp = -1;
 
+	for(int bufferIndex = 0; bufferIndex < BUFFER_CAPACITY; bufferIndex++){
+			metainfo[bufferIndex].free = true;
+			metainfo[bufferIndex].dirty = false;
+			metainfo[bufferIndex].blockNum = -1;
+			metainfo[bufferIndex].timeStamp = -1;
+
+		}
+	
+	//load BlockallocationMap into Buffer.
+	for(int blockNum = 0; blockNum <= 3; blockNum++){
+		Disk::readBlock(blockAllocMap + BLOCK_SIZE*blockNum, blockNum);
 	}
+
+
 }
 
 StaticBuffer::~StaticBuffer(){
+	for(int blockNum = 0; blockNum <= 3; blockNum++){
+		Disk::writeBlock(blockAllocMap + BLOCK_SIZE*blockNum, blockNum);
+	}
+
 	for (int bufferIndex = 0; bufferIndex < BUFFER_CAPACITY; bufferIndex++) {
-    if (metainfo[bufferIndex].free == false and
-        metainfo[bufferIndex].dirty == true) {
-			unsigned char* writeMem = new unsigned char[BLOCK_SIZE];
-			memcpy(writeMem, blocks[bufferIndex], BLOCK_SIZE);
-			for(int i = 0; i < BLOCK_SIZE; i++){
-				printf("%c", writeMem[i]);
-			}printf("\n");
-      	Disk::writeBlock(writeMem, metainfo[bufferIndex].blockNum);
-    }
+		if (metainfo[bufferIndex].free == false and
+			metainfo[bufferIndex].dirty == true) {
+				for(int i = 0; i < BLOCK_SIZE; i++){
+					printf("%c", blocks[bufferIndex][i]);
+				}
+			Disk::writeBlock(blocks[bufferIndex], metainfo[bufferIndex].blockNum);
+		}
   }
 }
 

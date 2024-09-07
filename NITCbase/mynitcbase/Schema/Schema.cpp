@@ -24,7 +24,10 @@ int Schema::closeRel(char relName[ATTR_SIZE]){
 int Schema::renameRel(char oldRelName[ATTR_SIZE], char newRelName[ATTR_SIZE]){
 
 
-	if(oldRelName == RELCAT_RELNAME || oldRelName == ATTRCAT_RELNAME){
+	if(strcmp(newRelName, RELCAT_RELNAME) == 0 || strcmp(newRelName, ATTRCAT_RELNAME) ==0){
+		return E_NOTPERMITTED;
+	}
+	if(strcmp(oldRelName, RELCAT_RELNAME) == 0 || strcmp(oldRelName, ATTRCAT_RELNAME) ==0){
 		return E_NOTPERMITTED;
 	}
 

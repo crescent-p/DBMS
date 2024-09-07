@@ -93,14 +93,6 @@ int BlockAccess::renameRelation(char oldName[ATTR_SIZE], char newName[ATTR_SIZE]
 	char* relName = new char[ATTR_SIZE];
 	RecId recId; 
 
-	if(strcmp(newName, RELCAT_RELNAME) == 0 || strcmp(newName, ATTRCAT_RELNAME) ==0){
-		return E_NOTPERMITTED;
-	}
-	if(strcmp(oldName, RELCAT_RELNAME) == 0 || strcmp(oldName, ATTRCAT_RELNAME) ==0){
-		return E_NOTPERMITTED;
-	}
-
-
 
 	strcpy(relName, RELCAT_ATTR_RELNAME);
 	strcpy(attr.sVal, newName);
@@ -136,10 +128,10 @@ int BlockAccess::renameRelation(char oldName[ATTR_SIZE], char newName[ATTR_SIZE]
 	recBuffer.setRecord(relRecord, recId.slot);
 
 // //tesing if setRecord is working fine
- 	RecBuffer recBufferr(RELCAT_BLOCK);
+//  	RecBuffer recBufferr(RELCAT_BLOCK);
 
- 	recBufferr.getHeader(&headInfo);
- 	recBufferr.getRecord(relRecord, recId.slot);
+//  	recBufferr.getHeader(&headInfo);
+//  	recBufferr.getRecord(relRecord, recId.slot);
 ////
 
 	
@@ -156,7 +148,9 @@ int BlockAccess::renameRelation(char oldName[ATTR_SIZE], char newName[ATTR_SIZE]
 		attrBuffer.getRecord(relRecord, recId.slot);
 
 		strcpy(relRecord[ATTRCAT_REL_NAME_INDEX].sVal, newName);
+		
 		attrBuffer.setRecord(relRecord, recId.slot);
+
 		recId = BlockAccess::linearSearch(ATTRCAT_RELID, relName, attr, EQ);
 	}
 	
@@ -231,7 +225,97 @@ int BlockAccess::renameAttribute(char *relName, char *oldName, char *newName){
 }
 
 
+int BlockAccess::insert(int relId, Attribute* record){
+	RelCatEntry relCatBuf= *(new RelCatEntry);
+	RelCacheTable::getRelCatEntry(relId, &relCatBuf);
 
+	int blockNum = relCatBuf.firstBlk;
+
+	RecId recId = {-1, -1};
+
+	int numOfSlots = relCatBuf.numSlotsPerBlk;
+	int numOfAttributes = relCatBuf.numAttrs;
+
+	int prevBlockNum = -1; //linked list prev 
+
+	//traverse until free slot is found;
+	while(blockNum != -1){
+		RecBuffer recBuffer(blockNum);
+		HeadInfo headInfo = *(new HeadInfo);
+		recBuffer.getHeader(&headInfo);
+		unsigned char* slotMap = new unsigned char[headInfo.numSlots]; 
+		recBuffer.getSlotMap(slotMap);
+
+		for(int i = 0; i < headInfo.numSlots; i++){
+			if(slotMap[i] == SLOT_UNOCCUPIED){
+				recId = {blockNum, i};
+				break;
+			}
+		}
+		prevBlockNum = blockNum;
+		blockNum = headInfo.rblock;
+	}
+
+	if(recId.block == -1 && recId.slot == -1){
+		if(relId == 0) return E_MAXRELATIONS;
+		RecBuffer recBuffer;
+
+		int blockNum = recBuffer.getBlockNum();
+		if(blockNum == E_DISKFULL)
+			return E_DISKFULL;
+
+		recId.slot = 0;
+		recId.block = blockNum;
+
+		//setting Header 
+		HeadInfo headInfo = *(new HeadInfo);
+		headInfo.blockType = REC;
+		headInfo.lblock = prevBlockNum;
+		headInfo.rblock = -1;
+		headInfo.numAttrs = numOfAttributes;
+		headInfo.numSlots = numOfSlots;
+		headInfo.pblock = -1;
+
+		recBuffer.setHeader(&headInfo);
+
+		unsigned char* slotMap = new unsigned char[numOfSlots];
+		for(int i = 0; i < numOfSlots; i++){
+			slotMap[i] = SLOT_UNOCCUPIED;
+		}
+		recBuffer.setSlotMap(slotMap);
+
+		if(prevBlockNum != -1){
+			HeadInfo headInfo = *(new HeadInfo);
+			RecBuffer recBuffer(prevBlockNum);
+			recBuffer.getHeader(&headInfo);
+			headInfo.rblock = blockNum;
+			recBuffer.setHeader(&headInfo);
+		}else{
+			relCatBuf.firstBlk = blockNum;
+			RelCacheTable::setRelCatEntry(relId, &relCatBuf);
+		}
+		relCatBuf.lastBlk = blockNum;
+		RelCacheTable::setRelCatEntry(relId, &relCatBuf);
+	}
+
+	RecBuffer insertBuff(blockNum);
+	insertBuff.setRecord(record, recId.slot);
+	unsigned char* slotMap = new unsigned char[numOfSlots];
+	insertBuff.getSlotMap(slotMap);
+	slotMap[recId.slot] = SLOT_OCCUPIED;
+	insertBuff.setSlotMap(slotMap);
+
+	HeadInfo headInfo = *(new HeadInfo);
+	insertBuff.getHeader(&headInfo);
+	headInfo.numEntries++;
+	insertBuff.setHeader(&headInfo);
+
+	relCatBuf.numRecs++;
+	RelCacheTable::setRelCatEntry(relId, &relCatBuf);
+
+	return SUCCESS;
+
+}
 
 
 

@@ -7,6 +7,7 @@
 
 
 bool isNumber(char* str);
+
 int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE], char attr[ATTR_SIZE], int op, char strVal[ATTR_SIZE]){
 	int srcRelId = OpenRelTable::getRelId(srcRel);
 	if(srcRelId == E_RELNOTOPEN){
@@ -87,3 +88,51 @@ bool isNumber(char* str){
 
 	return res == 1 && len == strlen(str);
 }
+
+ int Algebra::insert(char relName[ATTR_SIZE], int numberOfAttributes, char record[][ATTR_SIZE]){
+	if(strcmp(relName, ATTRCAT_RELNAME) == 0 || strcmp(relName, RELCAT_RELNAME) == 0){
+		return E_NOTPERMITTED;
+	}
+	int relId = OpenRelTable::getRelId(relName);
+
+	if(relId == E_RELNOTOPEN) return E_RELNOTOPEN;
+
+	RelCatEntry relCatEntry= *(new RelCatEntry);
+
+	int ret = RelCacheTable::getRelCatEntry(relId, &relCatEntry);
+
+	if(ret != SUCCESS){
+		return ret;
+ 	}
+
+	if(relCatEntry.numAttrs != numberOfAttributes){
+		return E_NATTRMISMATCH;
+	}
+
+	Attribute* attrRecord = new Attribute[numberOfAttributes];
+	
+	for(int attrCount = 0; attrCount < numberOfAttributes; attrCount++){
+
+		AttrCatEntry attrCatEntry = *(new AttrCatEntry);
+		AttrCacheTable::getAttrCatEntry(relId, attrCount, &attrCatEntry);
+
+		int type = attrCatEntry.attrType;
+		if(type == NUMBER){
+			if(isNumber(record[attrCount])){
+				attrRecord->nVal = atof(record[attrCount]);
+			}else{
+				return E_ATTRTYPEMISMATCH;
+			}
+		}else{
+			if(!isNumber(record[attrCount])){
+				strcpy(attrRecord->sVal , record[attrCount]);
+			}else{
+				return E_ATTRTYPEMISMATCH;
+			}
+		}
+
+	}
+
+	int retVal = BlockAccess::insert(relId, attrRecord);
+	return retVal;
+ }
