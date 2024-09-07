@@ -256,11 +256,14 @@ int BlockAccess::insert(int relId, Attribute* record){
 		blockNum = headInfo.rblock;
 	}
 
+
+
+
 	if(recId.block == -1 && recId.slot == -1){
 		if(relId == 0) return E_MAXRELATIONS;
 		RecBuffer recBuffer;
 
-		int blockNum = recBuffer.getBlockNum();
+		blockNum = recBuffer.getBlockNum();
 		if(blockNum == E_DISKFULL)
 			return E_DISKFULL;
 
@@ -275,6 +278,7 @@ int BlockAccess::insert(int relId, Attribute* record){
 		headInfo.numAttrs = numOfAttributes;
 		headInfo.numSlots = numOfSlots;
 		headInfo.pblock = -1;
+		headInfo.numEntries = 0;
 
 		recBuffer.setHeader(&headInfo);
 
@@ -298,7 +302,7 @@ int BlockAccess::insert(int relId, Attribute* record){
 		RelCacheTable::setRelCatEntry(relId, &relCatBuf);
 	}
 
-	RecBuffer insertBuff(blockNum);
+	RecBuffer insertBuff(recId.block);
 	insertBuff.setRecord(record, recId.slot);
 	unsigned char* slotMap = new unsigned char[numOfSlots];
 	insertBuff.getSlotMap(slotMap);

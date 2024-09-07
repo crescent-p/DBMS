@@ -117,6 +117,7 @@ int RecBuffer::getSlotMap(unsigned char *slotMap){
 }
 
 int BlockBuffer::loadBlockAndGetBufferPtr(unsigned char **bufferptr){
+	if(blockNum < 0) return E_OUTOFBOUND;
 	int bufferNum = StaticBuffer::getBufferNum(this->blockNum);
 
 	if(bufferNum != E_BLOCKNOTINBUFFER){
@@ -132,15 +133,18 @@ int BlockBuffer::loadBlockAndGetBufferPtr(unsigned char **bufferptr){
 			return E_OUTOFBOUND;
 		}
 
-		Disk::readBlock(StaticBuffer::blocks[bufferNum], this->blockNum);		
+		Disk::readBlock(StaticBuffer::blocks[bufferNum], this->blockNum);
+		*bufferptr = StaticBuffer::blocks[bufferNum];
+		StaticBuffer::metainfo[bufferNum].blockNum = this->blockNum;
+		StaticBuffer::metainfo[bufferNum].free = false;
+		//StaticBuffer::metainfo[bufferNum].dirty = true;
+		return SUCCESS;
 	}
 
 	*bufferptr = StaticBuffer::blocks[bufferNum];
 	StaticBuffer::metainfo[bufferNum].blockNum = this->blockNum;
 	StaticBuffer::metainfo[bufferNum].free = false;
 	//StaticBuffer::metainfo[bufferNum].dirty = true;
-
-	
 
 	return SUCCESS;
 }
@@ -170,7 +174,7 @@ int RecBuffer::setRecord(union Attribute *rec, int slotNum){
 	getHeader(&headInfo);
 
 
-	while(slotNum >= headInfo.numSlots){
+	while(slotNum > headInfo.numSlots){
 		slotNum -= headInfo.numSlots;
 		if(headInfo.rblock == -1){
 			return E_NOTFOUND;
@@ -186,6 +190,10 @@ int RecBuffer::setRecord(union Attribute *rec, int slotNum){
 	if(slotNum < 0 || slotNum >= slotCount){
 		return E_OUTOFBOUND;
 	}
+	if(blockNum < 0 || blockNum > DISK_BLOCKS){
+		return E_OUTOFBOUND;
+	}
+	
 
 	int recordSize = attrCount * ATTR_SIZE;
 	//each slot require one byte for slotCount
@@ -204,18 +212,18 @@ int RecBuffer::setRecord(union Attribute *rec, int slotNum){
 int BlockBuffer::setHeader(struct HeadInfo *head){
 	unsigned char* bufferPtr = new unsigned char[BLOCK_SIZE];
 
+
 	int ret = loadBlockAndGetBufferPtr(&bufferPtr);
 
 	if(ret != SUCCESS){
 		return SUCCESS;
 	}
-	HeadInfo  *bufferHeader = (struct HeadInfo*)bufferPtr;
-	memcpy(bufferHeader + 24, &head->numSlots, 4);
-	memcpy(bufferHeader + 16, &head->numEntries, 4);
-	memcpy(bufferHeader + 20, &head->numAttrs, 4);
-	memcpy(bufferHeader + 12, &head->rblock, 4);
-	memcpy(bufferHeader + 8, &head->lblock, 4);
-	memcpy(bufferHeader + 4, &head->pblock, 4);
+	memcpy(bufferPtr + 24, &head->numSlots, 4);
+	memcpy(bufferPtr + 16, &head->numEntries, 4);
+	memcpy(bufferPtr + 20, &head->numAttrs, 4);
+	memcpy(bufferPtr + 12, &head->rblock, 4);
+	memcpy(bufferPtr + 8, &head->lblock, 4);
+	memcpy(bufferPtr + 4, &head->pblock, 4);
 
 	ret = StaticBuffer::setDirtyBit(this->blockNum);
 
