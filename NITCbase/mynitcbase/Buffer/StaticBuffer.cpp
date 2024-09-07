@@ -33,9 +33,6 @@ StaticBuffer::~StaticBuffer(){
 	for (int bufferIndex = 0; bufferIndex < BUFFER_CAPACITY; bufferIndex++) {
 		if (metainfo[bufferIndex].free == false and
 			metainfo[bufferIndex].dirty == true) {
-				for(int i = 0; i < BLOCK_SIZE; i++){
-					printf("%c", blocks[bufferIndex][i]);
-				}
 			Disk::writeBlock(blocks[bufferIndex], metainfo[bufferIndex].blockNum);
 		}
   }

@@ -119,13 +119,13 @@ bool isNumber(char* str){
 		int type = attrCatEntry.attrType;
 		if(type == NUMBER){
 			if(isNumber(record[attrCount])){
-				attrRecord->nVal = atof(record[attrCount]);
+				attrRecord[attrCount].nVal = atof(record[attrCount]);
 			}else{
 				return E_ATTRTYPEMISMATCH;
 			}
 		}else{
 			if(!isNumber(record[attrCount])){
-				strcpy(attrRecord->sVal , record[attrCount]);
+				strcpy(attrRecord[attrCount].sVal , record[attrCount]);
 			}else{
 				return E_ATTRTYPEMISMATCH;
 			}
