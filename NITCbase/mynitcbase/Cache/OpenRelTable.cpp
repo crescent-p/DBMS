@@ -225,10 +225,12 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE]){
 		recordNum++;
 		ret = attrBlock.getRecord(record, recordNum);
 	}
-	head = NULL;
 
 	if(attrCacheEntry != head){
+		head = NULL;
 		AttrCacheTable::attrCache[freeSlot] = attrCacheEntry;
+	}else{
+		return E_RELNOTEXIST;
 	}
 
 	OpenRelTable::tableMetaInfo[freeSlot].free = false;
