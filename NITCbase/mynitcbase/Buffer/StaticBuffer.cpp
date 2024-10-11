@@ -67,8 +67,12 @@ int StaticBuffer::getFreeBuffer(int blockNum){
 		if(metainfo[highestIndex].dirty == true){
 			Disk::writeBlock(blocks[highestIndex], metainfo[highestIndex].blockNum);
 		}
-		return highestIndex;
+		allocatedBuffer =  highestIndex;
 	}
+	metainfo[allocatedBuffer].free = false;
+  	metainfo[allocatedBuffer].blockNum = blockNum;
+  	metainfo[allocatedBuffer].dirty = false;
+  	metainfo[allocatedBuffer].timeStamp = 0;
 
 	return allocatedBuffer;
 
@@ -89,8 +93,12 @@ int StaticBuffer::getBufferNum(int blockNum){
 int StaticBuffer::setDirtyBit(int blockNum){
 	int index = StaticBuffer::getBufferNum(blockNum);
 
-	if(index == E_OUTOFBOUND) return E_OUTOFBOUND;
-	if(index == E_BLOCKNOTINBUFFER) return E_BLOCKNOTINBUFFER;
+	if(index == E_OUTOFBOUND) { 
+		return E_OUTOFBOUND;
+	}
+	if(index == E_BLOCKNOTINBUFFER) {
+		return E_BLOCKNOTINBUFFER;
+	}
 
 	metainfo[index].dirty = true;
 
