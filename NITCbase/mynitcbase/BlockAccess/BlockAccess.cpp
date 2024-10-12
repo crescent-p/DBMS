@@ -484,7 +484,7 @@ int BlockAccess::project(int relId, Attribute *record){
 
 	RecBuffer* recBuffer = new RecBuffer(block);
 	recBuffer->getRecord(record, slot);
-
+	
 	return SUCCESS;
 
 }

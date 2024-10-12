@@ -237,7 +237,6 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE]){
 	strcpy(tableMetaInfo[freeSlot].relName, relName);
 
 	return SUCCESS;
-	
 }
 
 int OpenRelTable::closeRel(int relId){
