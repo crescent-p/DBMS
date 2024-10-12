@@ -119,7 +119,7 @@ int Schema::createRel(char relName[], int numOfAttributes, char attrNames[][ATTR
 }
 
 int Schema::deleteRel(char relName[ATTR_SIZE]){
-	if(strcmp(relName, RELCAT_RELNAME) || strcmp(relName, ATTRCAT_RELNAME)){
+	if(strcmp(relName, RELCAT_RELNAME) == 0 || strcmp(relName, ATTRCAT_RELNAME) == 0){
 		return E_NOTPERMITTED;
 	}
 	
