@@ -8,8 +8,8 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
   /* Initialize the Run Copy of Disk */
-  StaticBuffer buffer;
   Disk disk_run;
+  StaticBuffer buffer;
   OpenRelTable cache;
 
 
