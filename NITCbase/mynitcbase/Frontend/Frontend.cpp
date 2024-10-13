@@ -75,6 +75,7 @@ int Frontend::select_attrlist_from_table_where(char relname_source[ATTR_SIZE], c
   // Algebra::select + Algebra::project??
   int ret = Algebra::select(relname_source, TEMP, attribute, op, value);
   if(ret != SUCCESS){
+    Schema::deleteRel(TEMP);
     return ret;
   }
   

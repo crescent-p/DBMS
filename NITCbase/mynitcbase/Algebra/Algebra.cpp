@@ -187,13 +187,12 @@ int Algebra::project(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE], int tar_
 
 
 
-bool isNumber(char* str){
-	int len;
-	float ignore;
-
-	int res = sscanf(str, "%f %n", &ignore, &len);
-
-	return res == 1 && len == strlen(str);
+bool isNumber(char *str)
+{
+    int len;
+    float ignore;
+    int ret = sscanf(str, "%f %n", &ignore, &len);
+    return (ret == 1 && len == strlen(str));
 }
 
  int Algebra::insert(char relName[ATTR_SIZE], int numberOfAttributes, char record[][ATTR_SIZE]){

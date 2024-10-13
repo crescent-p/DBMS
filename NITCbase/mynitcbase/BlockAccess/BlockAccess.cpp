@@ -303,7 +303,10 @@ int BlockAccess::insert(int relId, Attribute* record){
 	}
 
 	RecBuffer insertBuff(recId.block);
-	insertBuff.setRecord(record, recId.slot);
+	int res = insertBuff.setRecord(record, recId.slot);
+	if(res != SUCCESS){
+		return res;
+	}
 	unsigned char* slotMap = new unsigned char[numOfSlots];
 	insertBuff.getSlotMap(slotMap);
 	slotMap[recId.slot] = SLOT_OCCUPIED;
@@ -341,9 +344,8 @@ int BlockAccess::deleteRelation(char *relName){
 	RecId recId;
 	Attribute* attribute = new Attribute;
 	strcpy(attribute->sVal, relName);
-	char* relCatAttrRelName;
-	strcpy(relCatAttrRelName, RELCAT_ATTR_RELNAME);
-	recId = BlockAccess::linearSearch(RELCAT_RELID, relCatAttrRelName, *attribute, EQ);
+	RelCacheTable::resetSearchIndex(RELCAT_RELID);
+	recId = BlockAccess::linearSearch(RELCAT_RELID, RELCAT_ATTR_RELNAME, *attribute, EQ);
 
 	if(recId.slot == -1 && recId.block == -1){
 		return E_RELNOTEXIST;
@@ -371,9 +373,7 @@ int BlockAccess::deleteRelation(char *relName){
 
 	while(true){
 		RecId attrCatRecId;
-		char* attrCatRelName;
-		strcpy(attrCatRelName, ATTRCAT_ATTR_RELNAME);
-		attrCatRecId = BlockAccess::linearSearch(ATTRCAT_RELID, attrCatRelName, *attribute, EQ);
+		attrCatRecId = BlockAccess::linearSearch(ATTRCAT_RELID, ATTRCAT_ATTR_RELNAME, *attribute, EQ);
 		if(attrCatRecId.block == -1 && attrCatRecId.slot == -1){
 			break;
 		}
