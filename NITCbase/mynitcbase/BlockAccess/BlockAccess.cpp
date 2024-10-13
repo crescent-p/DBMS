@@ -259,8 +259,8 @@ int BlockAccess::insert(int relId, Attribute* record){
 
 
 
-	if(recId.block == -1 && recId.slot == -1){
-		if(relId == 0) return E_MAXRELATIONS;
+	if(recId.block == -1 || recId.slot == -1){
+		if(relId == RELCAT_RELID) return E_MAXRELATIONS;
 		RecBuffer recBuffer;
 
 		blockNum = recBuffer.getBlockNum();

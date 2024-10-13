@@ -10,8 +10,9 @@ BlockBuffer::BlockBuffer(int blockNum){
 
 RecBuffer::RecBuffer(int blockNum) : BlockBuffer::BlockBuffer(blockNum){}
 
-BlockBuffer::BlockBuffer(char blockType){
-	int ret = getFreeBlock(blockType);
+BlockBuffer::BlockBuffer(char blocktype){
+	int blocVal = (blocktype == 'R') ? REC : UNUSED_BLK; 
+	int ret = getFreeBlock(blocVal);
 	
 	if(ret == E_DISKFULL){
 		this->blockNum = E_DISKFULL;
@@ -19,14 +20,15 @@ BlockBuffer::BlockBuffer(char blockType){
 	}
 	this->blockNum = ret;
 
-	unsigned char* blockPtr = new unsigned char[BLOCK_SIZE];
-	ret = loadBlockAndGetBufferPtr(&blockPtr);
-	if(ret != SUCCESS){
-		this->blockNum = ret;
-		return;
-	}
+	// unsigned char* blockPtr = new unsigned char[BLOCK_SIZE];
+	// ret = loadBlockAndGetBufferPtr(&blockPtr);
+	// if(ret != SUCCESS){
+	// 	this->blockNum = ret;
+	// 	return;
+	// }
 
 }
+
 RecBuffer::RecBuffer() : BlockBuffer('R'){}
 
 int BlockBuffer::getHeader(struct HeadInfo *head){
@@ -57,18 +59,18 @@ int RecBuffer::getRecord(union Attribute *rec, int slotNum){
 	struct HeadInfo head;
 	RecBuffer::getHeader(&head);
 
-	//std::cout<<slotNum<<std::endl;
-	while(slotNum >= head.numSlots){
-		slotNum -= head.numSlots;
-		if(head.rblock == -1){
-			return E_NOTFOUND;
-		}
-		blockNum = head.rblock;
+	// //std::cout<<slotNum<<std::endl;
+	// while(slotNum >= head.numSlots){
+	// 	slotNum -= head.numSlots;
+	// 	if(head.rblock == -1){
+	// 		return E_NOTFOUND;
+	// 	}
+	// 	blockNum = head.rblock;
 
-		RecBuffer::getHeader(&head);
-	}
+	// 	RecBuffer::getHeader(&head);
+	// }
 
-	RecBuffer:getHeader(&head);
+	// RecBuffer:getHeader(&head);
 
 	int attrCount = head.numAttrs;
 	int slotCount = head.numSlots;
@@ -90,7 +92,7 @@ int RecBuffer::getRecord(union Attribute *rec, int slotNum){
 	
 	memcpy(rec, slotPointer, recordSize);
 
-	blockNum = startBlock;
+	//blockNum = startBlock;
 
 	return SUCCESS;
 }
@@ -105,7 +107,8 @@ int RecBuffer::getSlotMap(unsigned char *slotMap){
 	}
 
 	HeadInfo headInfo;
-	RecBuffer::getHeader(&headInfo);
+	RecBuffer recBuffer = RecBuffer(this->blockNum);
+	recBuffer.getHeader(&headInfo);
 
 	int slotCount = headInfo.numSlots;
 
@@ -126,25 +129,17 @@ int BlockBuffer::loadBlockAndGetBufferPtr(unsigned char **bufferptr){
 				StaticBuffer::metainfo[i].timeStamp++;	
 		}
 		StaticBuffer::metainfo[bufferNum].timeStamp = 0;
-	}else{
+	}else if(bufferNum == E_BLOCKNOTINBUFFER){
 		bufferNum = StaticBuffer::getFreeBuffer(this->blockNum);
 
-		if(bufferNum == E_OUTOFBOUND){
-			return E_OUTOFBOUND;
+		if(bufferNum == E_OUTOFBOUND || bufferNum == FAILURE){
+			return bufferNum;
 		}
 
 		Disk::readBlock(StaticBuffer::blocks[bufferNum], this->blockNum);
-		*bufferptr = StaticBuffer::blocks[bufferNum];
-		StaticBuffer::metainfo[bufferNum].blockNum = this->blockNum;
-		StaticBuffer::metainfo[bufferNum].free = false;
-		//StaticBuffer::metainfo[bufferNum].dirty = true;
-		return SUCCESS;
 	}
 
 	*bufferptr = StaticBuffer::blocks[bufferNum];
-	StaticBuffer::metainfo[bufferNum].blockNum = this->blockNum;
-	StaticBuffer::metainfo[bufferNum].free = false;
-	//StaticBuffer::metainfo[bufferNum].dirty = true;
 
 	return SUCCESS;
 }
@@ -174,15 +169,15 @@ int RecBuffer::setRecord(union Attribute *rec, int slotNum){
 	getHeader(&headInfo);
 
 
-	while(slotNum > headInfo.numSlots){
-		slotNum -= headInfo.numSlots;
-		if(headInfo.rblock == -1){
-			return E_NOTFOUND;
-		}
-		blockNum = headInfo.rblock;
+	// while(slotNum > headInfo.numSlots){
+	// 	slotNum -= headInfo.numSlots;
+	// 	if(headInfo.rblock == -1){
+	// 		return E_NOTFOUND;
+	// 	}
+	// 	blockNum = headInfo.rblock;
 
-		RecBuffer::getHeader(&headInfo);
-	}
+	// 	RecBuffer::getHeader(&headInfo);
+	// }
 
 	int attrCount = headInfo.numAttrs;
 	int slotCount = headInfo.numSlots;
@@ -204,7 +199,11 @@ int RecBuffer::setRecord(union Attribute *rec, int slotNum){
 
 	memcpy(bufferPtr, rec, recordSize);
 
-	StaticBuffer::setDirtyBit(this->blockNum);
+	ret = StaticBuffer::setDirtyBit(this->blockNum);
+	
+	if(ret != SUCCESS){
+		return ret;
+	}
 
 	return SUCCESS;	
 }
@@ -218,12 +217,18 @@ int BlockBuffer::setHeader(struct HeadInfo *head){
 	if(ret != SUCCESS){
 		return SUCCESS;
 	}
-	memcpy(bufferPtr + 24, &head->numSlots, 4);
-	memcpy(bufferPtr + 16, &head->numEntries, 4);
-	memcpy(bufferPtr + 20, &head->numAttrs, 4);
-	memcpy(bufferPtr + 12, &head->rblock, 4);
-	memcpy(bufferPtr + 8, &head->lblock, 4);
-	memcpy(bufferPtr + 4, &head->pblock, 4);
+	struct HeadInfo *bufferHeader = (struct HeadInfo *)bufferPtr;
+
+    // copy the fields of the HeadInfo pointed to by head (except reserved) to
+    // the header of the block (pointed to by bufferHeader)
+    //(hint: bufferHeader->numSlots = head->numSlots )
+	bufferHeader->blockType = head->blockType;
+	bufferHeader->lblock = head->lblock;
+	bufferHeader->rblock = head->rblock;
+	bufferHeader->pblock = head->pblock;
+	bufferHeader->numAttrs = head->numAttrs;
+	bufferHeader->numEntries = head->numEntries;
+	bufferHeader->numSlots = head->numSlots;
 
 	ret = StaticBuffer::setDirtyBit(this->blockNum);
 
@@ -242,7 +247,8 @@ int BlockBuffer::setBlockType(int blockType){
 		return ret;
 	}
 	//setting first 4 bytes to blockType.
-	*((int32_t *)bufferPtr) = blockType;
+	int32_t *blockTypePtr = (int32_t*) bufferPtr;
+	*blockTypePtr = blockType;
 
 	StaticBuffer::blockAllocMap[this->blockNum] = blockType;
 	ret = StaticBuffer::setDirtyBit(this->blockNum);
@@ -259,7 +265,7 @@ int BlockBuffer::getFreeBlock(int blockType){
 			
 			this->blockNum = blockNum;
 
-			HeadInfo headInfo = *(new HeadInfo);
+			HeadInfo headInfo;
 			headInfo.lblock = -1;
 			headInfo.rblock = -1;
 			headInfo.pblock = -1;
@@ -283,7 +289,8 @@ int RecBuffer::setSlotMap(unsigned char *slotMap){
 	if(retVal != SUCCESS) return retVal;
 
 	HeadInfo headInfo = *(new HeadInfo);
-	getHeader(&headInfo);
+	RecBuffer recBuffer = RecBuffer(this->blockNum); 
+	recBuffer.getHeader(&headInfo);
 
 	int numSlots = headInfo.numSlots;
 
@@ -291,9 +298,7 @@ int RecBuffer::setSlotMap(unsigned char *slotMap){
 
 	memcpy(slotPtr, slotMap, numSlots);
 
-	retVal = StaticBuffer::setDirtyBit(this->blockNum);
-
-	return retVal;
+	return SUCCESS;
 
 }
 

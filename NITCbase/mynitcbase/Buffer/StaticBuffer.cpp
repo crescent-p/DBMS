@@ -7,6 +7,21 @@ struct BufferMetaInfo StaticBuffer::metainfo[BUFFER_CAPACITY];
 unsigned char StaticBuffer::blockAllocMap[DISK_BLOCKS];
 
 
+void printBuffer (int bufferIndex, unsigned char buffer[]) {
+	for (int i = 0; i < BLOCK_SIZE; i++) {
+		if (i % 32 == 0) printf ("\n");
+		printf ("%u ", buffer[i]);
+	}
+	printf ("\n");
+	printf ("\n");
+	for (int i = 0; i < BLOCK_SIZE; i++) {
+		if (i % 32 == 0) printf ("\n");
+		printf ("%c ", buffer[i]);
+	}
+	printf ("\n");
+}
+
+
 StaticBuffer::StaticBuffer(){
 
 	for(int bufferIndex = 0; bufferIndex < BUFFER_CAPACITY; bufferIndex++){
@@ -34,6 +49,7 @@ StaticBuffer::~StaticBuffer(){
 		if (metainfo[bufferIndex].free == false and
 			metainfo[bufferIndex].dirty == true) {
 			Disk::writeBlock(blocks[bufferIndex], metainfo[bufferIndex].blockNum);
+			Disk::readBlock(blocks[bufferIndex], metainfo[bufferIndex].blockNum);
 		}
   }
 }
@@ -57,15 +73,15 @@ int StaticBuffer::getFreeBuffer(int blockNum){
 		}
 	}
 
-	if(allocatedBuffer == -1){
+	if(allocatedBuffer == -1 || allocatedBuffer == BUFFER_CAPACITY){
 		int highestIndex = 0;
 		for(int i = 0; i < BUFFER_CAPACITY; i++){
-			if(metainfo[i].timeStamp > highestIndex){
+			if(metainfo[i].timeStamp > metainfo[highestIndex].timeStamp){
 				highestIndex = i;
 			}
 		}
 		if(metainfo[highestIndex].dirty == true){
-			Disk::writeBlock(blocks[highestIndex], metainfo[highestIndex].blockNum);
+			Disk::writeBlock(StaticBuffer::blocks[highestIndex], metainfo[highestIndex].blockNum);
 		}
 		allocatedBuffer =  highestIndex;
 	}
@@ -83,7 +99,7 @@ int StaticBuffer::getBufferNum(int blockNum){
 		return E_OUTOFBOUND;
 	}
 	for(int i = 0; i < BUFFER_CAPACITY; i++){
-		if(metainfo[i].blockNum == blockNum){
+		if(metainfo[i].free == false && metainfo[i].blockNum == blockNum){
 			return i;
 		}
 	}
