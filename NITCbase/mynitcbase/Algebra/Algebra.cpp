@@ -230,11 +230,7 @@ bool isNumber(char *str)
 				return E_ATTRTYPEMISMATCH;
 			}
 		}else{
-			if(!isNumber(record[attrCount])){
-				strcpy(attrRecord[attrCount].sVal , record[attrCount]);
-			}else{
-				return E_ATTRTYPEMISMATCH;
-			}
+			strcpy(attrRecord[attrCount].sVal , record[attrCount]);
 		}
 
 	}

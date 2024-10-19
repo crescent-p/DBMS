@@ -174,15 +174,15 @@ int RecBuffer::setRecord(union Attribute *rec, int slotNum){
 	getHeader(&headInfo);
 
 
-	while(slotNum > headInfo.numSlots){
-		slotNum -= headInfo.numSlots;
-		if(headInfo.rblock == -1){
-			return E_NOTFOUND;
-		}
-		blockNum = headInfo.rblock;
+	// while(slotNum > headInfo.numSlots){
+	// 	slotNum -= headInfo.numSlots;
+	// 	if(headInfo.rblock == -1){
+	// 		return E_NOTFOUND;
+	// 	}
+	// 	blockNum = headInfo.rblock;
 
-		RecBuffer::getHeader(&headInfo);
-	}
+	// 	RecBuffer::getHeader(&headInfo);
+	// }
 
 	int attrCount = headInfo.numAttrs;
 	int slotCount = headInfo.numSlots;
@@ -210,20 +210,26 @@ int RecBuffer::setRecord(union Attribute *rec, int slotNum){
 }
 
 int BlockBuffer::setHeader(struct HeadInfo *head){
-	unsigned char* bufferPtr = new unsigned char[BLOCK_SIZE];
+	unsigned char* bufferPtr;
 
 
 	int ret = loadBlockAndGetBufferPtr(&bufferPtr);
 
 	if(ret != SUCCESS){
-		return SUCCESS;
+		return ret;
 	}
-	memcpy(bufferPtr + 24, &head->numSlots, 4);
-	memcpy(bufferPtr + 16, &head->numEntries, 4);
-	memcpy(bufferPtr + 20, &head->numAttrs, 4);
-	memcpy(bufferPtr + 12, &head->rblock, 4);
-	memcpy(bufferPtr + 8, &head->lblock, 4);
-	memcpy(bufferPtr + 4, &head->pblock, 4);
+	 struct HeadInfo *bufferHeader = (struct HeadInfo *)bufferPtr;
+
+	// copy the fields of the HeadInfo pointed to by head (except reserved) to
+	// the header of the block (pointed to by bufferHeader)
+	//(hint: bufferHeader->numSlots = head->numSlots )
+	bufferHeader->blockType = head->blockType;
+	bufferHeader->lblock = head->lblock;
+	bufferHeader->rblock = head->rblock;
+	bufferHeader->pblock = head->pblock;
+	bufferHeader->numAttrs = head->numAttrs;
+	bufferHeader->numEntries = head->numEntries;
+	bufferHeader->numSlots = head->numSlots;
 
 	ret = StaticBuffer::setDirtyBit(this->blockNum);
 
@@ -277,12 +283,12 @@ int BlockBuffer::getFreeBlock(int blockType){
 }
 
 int RecBuffer::setSlotMap(unsigned char *slotMap){
-	unsigned char* bufferPtr = new unsigned char[BLOCK_SIZE];
-
+	unsigned char* bufferPtr;
+ 
 	int retVal = loadBlockAndGetBufferPtr(&bufferPtr);
 	if(retVal != SUCCESS) return retVal;
 
-	HeadInfo headInfo = *(new HeadInfo);
+	HeadInfo headInfo;
 	getHeader(&headInfo);
 
 	int numSlots = headInfo.numSlots;
@@ -290,10 +296,12 @@ int RecBuffer::setSlotMap(unsigned char *slotMap){
 	unsigned char* slotPtr = bufferPtr + HEADER_SIZE;
 
 	memcpy(slotPtr, slotMap, numSlots);
+	int ret = StaticBuffer::setDirtyBit(this->blockNum);
 
-	retVal = StaticBuffer::setDirtyBit(this->blockNum);
-
-	return retVal;
+	// if setDirtyBit failed, return the value returned by the call
+  	if (ret != SUCCESS)
+   		return ret;
+	return SUCCESS;
 
 }
 

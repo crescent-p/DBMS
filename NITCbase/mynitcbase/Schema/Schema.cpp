@@ -65,15 +65,13 @@ int Schema::renameAttr(char relName[ATTR_SIZE], char oldAttrName[ATTR_SIZE], cha
 }
 
 int Schema::createRel(char relName[], int numOfAttributes, char attrNames[][ATTR_SIZE], int attrType[]){
-	Attribute attrVal;
+	Attribute attrVal = *(new Attribute);
 	strcpy(attrVal.sVal, relName);
 	
 	RecId targetId = {-1, -1};
 
 	RelCacheTable::resetSearchIndex(RELCAT_RELID);
-	char* name = new char[ATTR_SIZE];
-	strcpy(name, RELCAT_ATTR_RELNAME);
-	targetId = BlockAccess::linearSearch(RELCAT_RELID, name, attrVal, EQ);
+	targetId = BlockAccess::linearSearch(RELCAT_RELID, RELCAT_ATTR_RELNAME, attrVal, EQ);
 
 	if(targetId.slot != -1 && targetId.block != -1) return E_RELEXIST;
 
