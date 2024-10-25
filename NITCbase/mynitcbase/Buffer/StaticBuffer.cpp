@@ -60,6 +60,15 @@ StaticBuffer::~StaticBuffer() {
 	}
 }
 
+//modified in stage10 
+int StaticBuffer::getStaticBlockType(int blockNum){
+	if(blockNum < 0 || blockNum >= DISK_BLOCKS){
+		return E_OUTOFBOUND;
+	}
+
+	return (int)blockAllocMap[blockNum]; 
+}
+
 
 /*
 At this stage, we are not writing back from the buffer to the disk since we are

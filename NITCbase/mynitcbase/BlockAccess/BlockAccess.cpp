@@ -10,6 +10,37 @@ inline bool operator != (RecId lhs, RecId rhs) {
 	return (lhs.block != rhs.block || lhs.slot != rhs.slot);
 }
 
+
+//Modified in stage10
+int BlockAccess::search(int relId, Attribute *record, char *attrName, Attribute attrVal, int op){
+	RecId recId;
+	AttrCatEntry attrCatEntry = *(new AttrCatEntry);
+	int res = AttrCacheTable::getAttrCatEntry(relId, attrName, &attrCatEntry);
+	if(res != SUCCESS){
+		return res;
+	}
+	int rootBlock = attrCatEntry.rootBlock;
+	
+	if(rootBlock == -1){
+		recId = linearSearch(relId, attrName,  attrVal, op);
+	}else{
+		recId = BPlusTree::bPlusSearch(relId, attrName, attrVal, op);
+	}
+
+	if(recId.slot == -1 && recId.block == -1){
+		return E_NOTFOUND;
+	}
+
+	RecBuffer recBuffer = RecBuffer(recId.block);
+	res = recBuffer.getRecord(record, recId.slot);
+
+	if(res != SUCCESS)
+		return res;
+
+	return SUCCESS;
+}
+
+
 RecId BlockAccess::linearSearch(int relId, char attrName[ATTR_SIZE], union Attribute attrVal, int op)
 {
 	// get the previous search index of the relation relId from the relation cache
@@ -435,35 +466,6 @@ int BlockAccess::insert(int relId, Attribute *record) {
     // the relation. (use RelCacheTable::setRelCatEntry function)
 	relCatEntry.numRecs++;
 	RelCacheTable::setRelCatEntry(relId, &relCatEntry);
-
-    return SUCCESS;
-}
-
-/*
-NOTE: This function will copy the result of the search to the `record` argument.
-      The caller should ensure that space is allocated for `record` array
-      based on the number of attributes in the relation.
-*/
-int BlockAccess::search(int relId, Attribute *record, char attrName[ATTR_SIZE], Attribute attrVal, int op) {
-    // Declare a variable called recid to store the searched record
-    RecId recId;
-
-    /* search for the record id (recid) corresponding to the attribute with
-    attribute name attrName, with value attrval and satisfying the condition op
-    using linearSearch() */
-	recId = BlockAccess::linearSearch(relId, attrName, attrVal, op);
-
-    // if there's no record satisfying the given condition (recId = {-1, -1})
-	if (recId == RecId{-1, -1})
-       return E_NOTFOUND;
-
-    /* Copy the record with record id (recId) to the record buffer (record)
-       For this Instantiate a RecBuffer class object using recId and
-       call the appropriate method to fetch the record
-    */
-
-   	RecBuffer blockBuffer (recId.block);
-   	blockBuffer.getRecord(record, recId.slot);
 
     return SUCCESS;
 }
