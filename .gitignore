@@ -3,3 +3,5 @@ nitcbase
 nitcbase-debug
 build
 NITCbase/Disk
+NITCbase/XFS_interface
+NITCbase/Files
