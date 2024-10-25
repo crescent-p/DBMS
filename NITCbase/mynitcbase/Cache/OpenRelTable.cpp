@@ -232,7 +232,7 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE]){
 	}
 
 	RecBuffer relBuffer(recId.block);
-	Attribute relationRecord [RELCAT_NO_ATTRS];
+	Attribute relationRecord[RELCAT_NO_ATTRS];
 	RelCacheEntry *relCacheBuffer = nullptr;
 
 	relBuffer.getRecord(relationRecord, recId.slot);

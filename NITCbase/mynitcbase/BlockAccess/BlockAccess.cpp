@@ -226,15 +226,15 @@ int BlockAccess::renameAttribute(char *relName, char *oldName, char *newName){
 
 
 int BlockAccess::insert(int relId, Attribute* record){
-	RelCatEntry relCatBuf= *(new RelCatEntry);
-	RelCacheTable::getRelCatEntry(relId, &relCatBuf);
+	RelCatEntry relCatEntry= *(new RelCatEntry);
+	RelCacheTable::getRelCatEntry(relId, &relCatEntry);
 
-	int blockNum = relCatBuf.firstBlk;
+	int blockNum = relCatEntry.firstBlk;
 
 	RecId recId = {-1, -1};
 
-	int numOfSlots = relCatBuf.numSlotsPerBlk;
-	int numOfAttributes = relCatBuf.numAttrs;
+	int numOfSlots = relCatEntry.numSlotsPerBlk;
+	int numOfAttributes = relCatEntry.numAttrs;
 
 	int prevBlockNum = -1; //linked list prev 
 
@@ -258,12 +258,13 @@ int BlockAccess::insert(int relId, Attribute* record){
 
 
 
-
+	// some problem in this.
 	if(recId.block == -1 || recId.slot == -1){
+		// because we are allocation only one block for relation catalog
 		if(relId == RELCAT_RELID) return E_MAXRELATIONS;
-		RecBuffer recBuffer;
+		RecBuffer blocBuffer;
 
-		blockNum = recBuffer.getBlockNum();
+		blockNum = blocBuffer.getBlockNum();
 		if(blockNum == E_DISKFULL)
 			return E_DISKFULL;
 
@@ -271,39 +272,41 @@ int BlockAccess::insert(int relId, Attribute* record){
 		recId.block = blockNum;
 
 		//setting Header 
-		HeadInfo headInfo = *(new HeadInfo);
+		HeadInfo headInfo;
 		headInfo.blockType = REC;
-		headInfo.lblock = prevBlockNum;
+		headInfo.lblock = prevBlockNum; //TODO :: should set to prevBlockNum right?
 		headInfo.rblock = -1;
 		headInfo.numAttrs = numOfAttributes;
 		headInfo.numSlots = numOfSlots;
 		headInfo.pblock = -1;
 		headInfo.numEntries = 0;
 
-		recBuffer.setHeader(&headInfo);
+		blocBuffer.setHeader(&headInfo);
 
 		unsigned char* slotMap = new unsigned char[numOfSlots];
 		for(int i = 0; i < numOfSlots; i++){
 			slotMap[i] = SLOT_UNOCCUPIED;
 		}
-		recBuffer.setSlotMap(slotMap);
+		blocBuffer.setSlotMap(slotMap);
 
 		if(prevBlockNum != -1){
-			HeadInfo headInfo = *(new HeadInfo);
-			RecBuffer recBuffer(prevBlockNum);
-			recBuffer.getHeader(&headInfo);
-			headInfo.rblock = blockNum;
-			recBuffer.setHeader(&headInfo);
+			HeadInfo prevheadInfo = *(new HeadInfo);
+			RecBuffer prevRecBuffer(prevBlockNum);
+			prevRecBuffer.getHeader(&prevheadInfo);
+			prevheadInfo.rblock = blockNum;
+			prevRecBuffer.setHeader(&prevheadInfo);
 		}else{
-			relCatBuf.firstBlk = blockNum;
-			RelCacheTable::setRelCatEntry(relId, &relCatBuf);
+			relCatEntry.firstBlk = blockNum;
 		}
-		relCatBuf.lastBlk = blockNum;
-		RelCacheTable::setRelCatEntry(relId, &relCatBuf);
+		relCatEntry.lastBlk = blockNum;
+		RelCacheTable::setRelCatEntry(relId, &relCatEntry);
 	}
 
 	RecBuffer insertBuff(recId.block);
-	insertBuff.setRecord(record, recId.slot);
+	int res = insertBuff.setRecord(record, recId.slot);
+	if(res != SUCCESS){
+		return res;
+	}
 	unsigned char* slotMap = new unsigned char[numOfSlots];
 	insertBuff.getSlotMap(slotMap);
 	slotMap[recId.slot] = SLOT_OCCUPIED;
@@ -314,8 +317,8 @@ int BlockAccess::insert(int relId, Attribute* record){
 	headInfo.numEntries++;
 	insertBuff.setHeader(&headInfo);
 
-	relCatBuf.numRecs++;
-	RelCacheTable::setRelCatEntry(relId, &relCatBuf);
+	relCatEntry.numRecs++;
+	RelCacheTable::setRelCatEntry(relId, &relCatEntry);
 
 	return SUCCESS;
 
@@ -341,9 +344,8 @@ int BlockAccess::deleteRelation(char *relName){
 	RecId recId;
 	Attribute* attribute = new Attribute;
 	strcpy(attribute->sVal, relName);
-	char* relCatAttrRelName;
-	strcpy(relCatAttrRelName, RELCAT_ATTR_RELNAME);
-	recId = BlockAccess::linearSearch(RELCAT_RELID, relCatAttrRelName, *attribute, EQ);
+	RelCacheTable::resetSearchIndex(RELCAT_RELID);
+	recId = BlockAccess::linearSearch(RELCAT_RELID, RELCAT_ATTR_RELNAME, *attribute, EQ);
 
 	if(recId.slot == -1 && recId.block == -1){
 		return E_RELNOTEXIST;
@@ -371,9 +373,7 @@ int BlockAccess::deleteRelation(char *relName){
 
 	while(true){
 		RecId attrCatRecId;
-		char* attrCatRelName;
-		strcpy(attrCatRelName, ATTRCAT_ATTR_RELNAME);
-		attrCatRecId = BlockAccess::linearSearch(ATTRCAT_RELID, attrCatRelName, *attribute, EQ);
+		attrCatRecId = BlockAccess::linearSearch(ATTRCAT_RELID, ATTRCAT_ATTR_RELNAME, *attribute, EQ);
 		if(attrCatRecId.block == -1 && attrCatRecId.slot == -1){
 			break;
 		}

@@ -12,13 +12,13 @@ RecBuffer::RecBuffer(int blockNum) : BlockBuffer::BlockBuffer(blockNum){}
 
 BlockBuffer::BlockBuffer(char blocktype){
 	int blocVal = (blocktype == 'R') ? REC : UNUSED_BLK; 
-	int ret = getFreeBlock(blocVal);
+	int blockNum = getFreeBlock(blocVal);
 	
-	if(ret == E_DISKFULL){
-		this->blockNum = E_DISKFULL;
+	if(blockNum < 0 || blockNum >= DISK_BLOCKS){
+		this->blockNum = blockNum;
 		return;
 	}
-	this->blockNum = ret;
+	this->blockNum = blockNum;
 
 	// unsigned char* blockPtr = new unsigned char[BLOCK_SIZE];
 	// ret = loadBlockAndGetBufferPtr(&blockPtr);
@@ -51,7 +51,7 @@ int BlockBuffer::getHeader(struct HeadInfo *head){
 
 	return SUCCESS;
 }
-using namespace std;
+
 int RecBuffer::getRecord(union Attribute *rec, int slotNum){
 		
 	int startBlock = blockNum;
@@ -209,19 +209,19 @@ int RecBuffer::setRecord(union Attribute *rec, int slotNum){
 }
 
 int BlockBuffer::setHeader(struct HeadInfo *head){
-	unsigned char* bufferPtr = new unsigned char[BLOCK_SIZE];
+	unsigned char* bufferPtr;
 
 
 	int ret = loadBlockAndGetBufferPtr(&bufferPtr);
 
 	if(ret != SUCCESS){
-		return SUCCESS;
+		return ret;
 	}
-	struct HeadInfo *bufferHeader = (struct HeadInfo *)bufferPtr;
+	 struct HeadInfo *bufferHeader = (struct HeadInfo *)bufferPtr;
 
-    // copy the fields of the HeadInfo pointed to by head (except reserved) to
-    // the header of the block (pointed to by bufferHeader)
-    //(hint: bufferHeader->numSlots = head->numSlots )
+	// copy the fields of the HeadInfo pointed to by head (except reserved) to
+	// the header of the block (pointed to by bufferHeader)
+	//(hint: bufferHeader->numSlots = head->numSlots )
 	bufferHeader->blockType = head->blockType;
 	bufferHeader->lblock = head->lblock;
 	bufferHeader->rblock = head->rblock;
@@ -283,21 +283,24 @@ int BlockBuffer::getFreeBlock(int blockType){
 }
 
 int RecBuffer::setSlotMap(unsigned char *slotMap){
-	unsigned char* bufferPtr = new unsigned char[BLOCK_SIZE];
-
+	unsigned char* bufferPtr;
+ 
 	int retVal = loadBlockAndGetBufferPtr(&bufferPtr);
 	if(retVal != SUCCESS) return retVal;
 
-	HeadInfo headInfo = *(new HeadInfo);
-	RecBuffer recBuffer = RecBuffer(this->blockNum); 
-	recBuffer.getHeader(&headInfo);
+	HeadInfo headInfo;
+	getHeader(&headInfo);
 
 	int numSlots = headInfo.numSlots;
 
 	unsigned char* slotPtr = bufferPtr + HEADER_SIZE;
 
 	memcpy(slotPtr, slotMap, numSlots);
+	int ret = StaticBuffer::setDirtyBit(this->blockNum);
 
+	// if setDirtyBit failed, return the value returned by the call
+  	if (ret != SUCCESS)
+   		return ret;
 	return SUCCESS;
 
 }
