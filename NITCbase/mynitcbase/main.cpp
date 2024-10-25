@@ -2,22 +2,15 @@
 #include "Cache/OpenRelTable.h"
 #include "Disk_Class/Disk.h"
 #include "FrontendInterface/FrontendInterface.h"
-#include <bits/stdc++.h>
 
-using namespace std;
+// local headers
+#include <iostream>
 
-int main(int argc, char *argv[]) {
-  /* Initialize the Run Copy of Disk */
-  Disk disk_run;
-  StaticBuffer buffer;
-  OpenRelTable cache;
+int main(int argc, char *argv[])
+{
+	Disk disk_run;
+	StaticBuffer bufferCache;
+	OpenRelTable cache;
 
-   // RecBuffer mybuffer(6);
-   // HeadInfo* header = new HeadInfo;
-   // mybuffer.getHeader(header);
-
-   // printf("%d", header->numAttrs);
-
-  return FrontendInterface::handleFrontend(argc, argv);
-  // FrontendInterface::handleFrontend(argc, argv);
+	return FrontendInterface::handleFrontend(argc, argv);
 }
