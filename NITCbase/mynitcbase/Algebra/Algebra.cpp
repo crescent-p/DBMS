@@ -110,7 +110,7 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE],
 
     // read every record that satisfies the condition by repeatedly calling
     // BlockAccess::search() until there are no more records to be read
-
+    //int comparisons = 0;
     while (BlockAccess::search(srcRelId, record, attr, attrVal, op) == SUCCESS) 
     {
         ret = BlockAccess::insert(targetRelId, record);

@@ -138,7 +138,7 @@ int AttrCacheTable::getSearchIndex(int relId, char attrName[ATTR_SIZE], IndexId 
     AttrCacheEntry* attrCacheEntry = attrCache[relId];
 
     while(attrCacheEntry != nullptr){
-        if(strcmp(attrCacheEntry->attrCatEntry.relName, attrName) == 0){
+        if(strcmp(attrCacheEntry->attrCatEntry.attrName, attrName) == 0){
             *searchIndex = attrCacheEntry->searchIndex;
             return SUCCESS;
         }
