@@ -1,11 +1,12 @@
 #include "BPlusTree.h"
-
+#include "../shared.h"
 #include <cstring>
 #include <iostream>
 
 
+
 RecId BPlusTree::bPlusSearch(int relId, char attrName[ATTR_SIZE], union Attribute attrVal, int op){
-    int comparisons = 0;
+    
     // declare searchIndex which will be used to store search index for attrName.
     IndexId searchIndex;
 
@@ -82,7 +83,7 @@ RecId BPlusTree::bPlusSearch(int relId, char attrName[ATTR_SIZE], union Attribut
     */
 
     while(StaticBuffer::getStaticBlockType(block) == IND_INTERNAL) {  //use StaticBuffer::getStaticBlockType()
-        comparisons++;
+        
         // load the block into internalBlk using IndInternal::IndInternal().
         IndInternal internalBlk(block);
 
@@ -110,6 +111,7 @@ RecId BPlusTree::bPlusSearch(int relId, char attrName[ATTR_SIZE], union Attribut
             // load entry in the first slot of the block into intEntry
             // using IndInternal::getEntry().
             internalBlk.getEntry(&intEntry, 0);
+            BplusTreeComparisons++;
             block = intEntry.lChild;
 
         } else {
@@ -135,6 +137,7 @@ RecId BPlusTree::bPlusSearch(int relId, char attrName[ATTR_SIZE], union Attribut
             if(ret != SUCCESS)
                 break;
             int cmpVal = compareAttrs(intEntry.attrVal, attrVal, attrType);
+            BplusTreeComparisons++;
             if (
                     (op == EQ && cmpVal == 0) ||
                     (op == GE && cmpVal >= 0) ||
@@ -165,7 +168,6 @@ RecId BPlusTree::bPlusSearch(int relId, char attrName[ATTR_SIZE], union Attribut
                 that satisfies our condition (moving right)             ******/
     
     while (block != -1) {
-        comparisons++;
         // load the block into leafBlk using IndLeaf::IndLeaf().
         IndLeaf leafBlk(block);
         HeadInfo leafHead;
@@ -177,15 +179,13 @@ RecId BPlusTree::bPlusSearch(int relId, char attrName[ATTR_SIZE], union Attribut
         Index leafEntry;
 
         while (index < leafHead.numEntries /*index < numEntries in leafBlk*/) {
-            comparisons++;
-
             // load entry corresponding to block and index into leafEntry
             // using IndLeaf::getEntry().
             leafBlk.getEntry(&leafEntry, index);
 
             int cmpVal = compareAttrs(leafEntry.attrVal, attrVal, attrType); /* comparison between leafEntry's attribute value
                             and input attrVal using compareAttrs()*/
-
+            BplusTreeComparisons++;
             if (
                 (op == EQ && cmpVal == 0) ||
                 (op == LE && cmpVal <= 0) ||
@@ -195,7 +195,6 @@ RecId BPlusTree::bPlusSearch(int relId, char attrName[ATTR_SIZE], union Attribut
                 (op == NE && cmpVal != 0)
             ) {
                 // (entry satisfying the condition found)
-                std::cout<<comparisons<<std::endl;
                 // set search index to {block, index}
                 searchIndex.block = block;
                 searchIndex.index = index;
@@ -209,7 +208,6 @@ RecId BPlusTree::bPlusSearch(int relId, char attrName[ATTR_SIZE], union Attribut
             } else if ((op == EQ || op == LE || op == LT) && cmpVal > 0) {
                 /*future entries will not satisfy EQ, LE, LT since the values
                     are arranged in ascending order in the leaves */
-                std::cout<<comparisons<<std::endl;
                 return RecId {-1, -1};
             }
 
@@ -221,7 +219,6 @@ RecId BPlusTree::bPlusSearch(int relId, char attrName[ATTR_SIZE], union Attribut
         for all the other op it is guaranteed that the block being searched
         will have an entry, if it exists, satisying that op. */
         if (op != NE) {
-            std::cout<<comparisons<<std::endl;
             break;
         }
 

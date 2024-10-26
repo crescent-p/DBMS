@@ -1,4 +1,5 @@
 #include "Algebra.h"
+#include "../shared.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -110,7 +111,8 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE],
 
     // read every record that satisfies the condition by repeatedly calling
     // BlockAccess::search() until there are no more records to be read
-    //int comparisons = 0;
+    BplusTreeComparisons = 0;
+    LinearSearchComparisons = 0;
     while (BlockAccess::search(srcRelId, record, attr, attrVal, op) == SUCCESS) 
     {
         ret = BlockAccess::insert(targetRelId, record);
@@ -127,6 +129,11 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE],
             Schema::deleteRel(targetRel);
             return ret;
         }
+    }
+    if(BplusTreeComparisons){
+        std::cout<<"Number of BplusTreeComparisons = "<<BplusTreeComparisons<<std::endl;
+    }else{
+        std::cout<<"Number of LinearSearchComparison = "<<LinearSearchComparisons<<std::endl;
     }
 
     // Close the targetRel by calling closeRel() method of schema layer

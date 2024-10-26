@@ -1,4 +1,5 @@
 #include "BlockAccess.h"
+#include "../shared.h"
 
 #include <cstring>
 
@@ -9,6 +10,7 @@ inline bool operator == (RecId lhs, RecId rhs) {
 inline bool operator != (RecId lhs, RecId rhs) {
 	return (lhs.block != rhs.block || lhs.slot != rhs.slot);
 }
+
 
 
 //Modified in stage10
@@ -131,7 +133,7 @@ RecId BlockAccess::linearSearch(int relId, char attrName[ATTR_SIZE], union Attri
 		// will store the difference between the attributes 
 		// set cmpVal using compareAttrs()
 		int cmpVal = compareAttrs(record[attrOffset], attrVal, attrCatBuffer.attrType); 
-
+		LinearSearchComparisons++;
 		/* 
 		TODO: check whether this record satisfies the given condition.
 		* It is determined based on the output of previous comparison and the op value received.
