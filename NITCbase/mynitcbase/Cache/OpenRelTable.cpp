@@ -351,7 +351,7 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE])
 int OpenRelTable::closeRel(int relId) {
   	if (relId == RELCAT_RELID || relId == ATTRCAT_RELID) return E_NOTPERMITTED;
 
-  	if (relId < 0 || relId >= MAX_OPEN) return E_OUTOFBOUND;
+  	if (0 > relId || relId >= MAX_OPEN) return E_OUTOFBOUND;
 
   	if (tableMetaInfo[relId].free) return E_RELNOTOPEN;
 
@@ -373,14 +373,7 @@ int OpenRelTable::closeRel(int relId) {
 	// allocated in the OpenRelTable::openRel() function
 	free (RelCacheTable::relCache[relId]);
 	
-	//modified in stage11
-	AttrCacheEntry *attrCacheEntry = AttrCacheTable::attrCache[relId];
-
-	for(; attrCacheEntry != nullptr; attrCacheEntry = attrCacheEntry->next){
-		int ret = AttrCacheTable::setAttrCatEntry(relId, attrCacheEntry->attrCatEntry.offset, &(attrCacheEntry->attrCatEntry));
-		if(ret != SUCCESS)
-			return ret;
-	}
+	// // RelCacheEntry *relCacheBuffer = RelCacheTable::relCache[relId];
 
 	//* because we are not modifying the attribute cache at this stage,
 	//* write-back is not required. We will do it in subsequent
@@ -389,12 +382,23 @@ int OpenRelTable::closeRel(int relId) {
 	AttrCacheEntry *head = AttrCacheTable::attrCache[relId];
 	AttrCacheEntry *next = head->next;
 
-	while (next) {
+	while (true) {
+		if (head->dirty)
+		{
+			Attribute attrCatRecord [ATTRCAT_NO_ATTRS];
+			AttrCacheTable::attrCatEntryToRecord(&(head->attrCatEntry), attrCatRecord);
+
+			RecBuffer attrCatBlockBuffer (head->recId.block);
+			attrCatBlockBuffer.setRecord(attrCatRecord, head->recId.slot);
+		}
+
+
 		free (head);
 		head = next;
+
+		if (head == NULL) break;
 		next = next->next;
 	}
-	free(head);	
 
 	// update `tableMetaInfo` to set `relId` as a free slot
 	// update `relCache` and `attrCache` to set the entry at `relId` to nullptr

@@ -21,6 +21,15 @@ void printBuffer (int bufferIndex, unsigned char buffer[]) {
 	printf ("\n");
 }
 
+void printBlockAllocMap (unsigned char blockAllocMap[]) {
+	for (int i = 0; i < DISK_BLOCKS; i++)
+	{
+		if (i % 32 == 0) printf("\n");
+		printf("%u ", blockAllocMap[i]);
+	}
+	printf("\n");
+}
+
 StaticBuffer::StaticBuffer(){
 	for (int blockIndex = 0, blockAllocMapSlot = 0; blockIndex < 4; blockIndex++) {
 		unsigned char buffer [BLOCK_SIZE];
@@ -58,15 +67,6 @@ StaticBuffer::~StaticBuffer() {
 			&& metainfo[bufferIndex].dirty == true)
 			Disk::writeBlock(blocks[bufferIndex], metainfo[bufferIndex].blockNum);
 	}
-}
-
-//modified in stage10 
-int StaticBuffer::getStaticBlockType(int blockNum){
-	if(blockNum < 0 || blockNum >= DISK_BLOCKS){
-		return E_OUTOFBOUND;
-	}
-
-	return (int)blockAllocMap[blockNum]; 
 }
 
 
@@ -135,19 +135,30 @@ int StaticBuffer::getBufferNum(int blockNum) {
 
 int StaticBuffer::setDirtyBit(int blockNum){
     // find the buffer index corresponding to the block using getBufferNum().
-	int bufferNum = getBufferNum(blockNum);
+	int bufferIndex = getBufferNum(blockNum);
 
     //! if block is not present in the buffer (bufferNum = E_BLOCKNOTINBUFFER)
-	if (bufferNum == E_BLOCKNOTINBUFFER)
+	if (bufferIndex == E_BLOCKNOTINBUFFER)
         return E_BLOCKNOTINBUFFER;
 
     //! if blockNum is out of bound (bufferNum = E_OUTOFBOUND)
-	if (bufferNum == E_OUTOFBOUND)
+	if (bufferIndex == E_OUTOFBOUND)
         return E_OUTOFBOUND;
 
     // else (the bufferNum is valid)
     //     set the dirty bit of that buffer to true in metainfo
-	metainfo[bufferNum].dirty = true;
+	metainfo[bufferIndex].dirty = true;
 
     return SUCCESS;
+}
+
+int StaticBuffer::getStaticBlockType(int blockNum){
+    // Check if blockNum is valid (non zero and less than number of disk blocks)
+    // and return E_OUTOFBOUND if not valid.
+
+	if (blockNum < 0 || blockNum >= DISK_BLOCKS) return E_OUTOFBOUND;
+
+    // Access the entry in block allocation map corresponding to the blockNum argument
+    // and return the block type after type casting to integer.
+	return (int)blockAllocMap[blockNum];
 }
