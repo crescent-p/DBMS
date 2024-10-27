@@ -312,7 +312,7 @@ int BlockAccess::insert(int relId, Attribute *record) {
     int blockNum = relCatEntry.firstBlk;
 
     // rec_id will be used to store where the new record will be inserted
-    RecId rec_id = {-1, -1};
+    RecId recId = {-1, -1};
 
     int numOfSlots = relCatEntry.numSlotsPerBlk;
     int numOfAttributes = relCatEntry.numAttrs;
@@ -344,12 +344,12 @@ int BlockAccess::insert(int relId, Attribute *record) {
            	// of the linked list of record blocks (break from the loop) 
 			//* slot map stores SLOT_UNOCCUPIED if slot is free and SLOT_OCCUPIED if slot is occupied
 			if (slotMap[slotIndex] == SLOT_UNOCCUPIED) {
-				rec_id = RecId{blockNum, slotIndex};
+				recId = RecId{blockNum, slotIndex};
 				break;
 			}
 		}
 
-		if (rec_id != RecId{-1, -1}) break;
+		if (recId != RecId{-1, -1}) break;
 
         /* otherwise, continue to check the next block by updating the
            block numbers as follows:
@@ -361,7 +361,7 @@ int BlockAccess::insert(int relId, Attribute *record) {
     }
 
     //  if no free slot is found in existing record blocks (rec_id = {-1, -1})
-	if (rec_id == RecId{-1, -1})
+	if (recId == RecId{-1, -1})
     {
         // if relation is RELCAT, do not allocate any more blocks
         //     return E_MAXRELATIONS;
@@ -379,7 +379,7 @@ int BlockAccess::insert(int relId, Attribute *record) {
         if (blockNum == E_DISKFULL) return E_DISKFULL;
 
         // Assign rec_id.block = new block number(i.e. ret) and rec_id.slot = 0
-		rec_id = RecId {blockNum, 0};
+		recId = RecId {blockNum, 0};
 
 		// TODO: set the header of the new record block such that it links with
 		// TODO: existing record blocks of the relation
@@ -440,10 +440,10 @@ int BlockAccess::insert(int relId, Attribute *record) {
     }
 
     // create a RecBuffer object for rec_id.block
-    RecBuffer blockBuffer (rec_id.block);
+    RecBuffer blockBuffer (recId.block);
 
 	// insert the record into rec_id'th slot using RecBuffer.setRecord())
-	blockBuffer.setRecord(record, rec_id.slot);
+	blockBuffer.setRecord(record, recId.slot);
 
     /* update the slot map of the block by marking entry of the slot to
        which record was inserted as occupied) */
@@ -452,7 +452,7 @@ int BlockAccess::insert(int relId, Attribute *record) {
 	unsigned char slotmap [numOfSlots];
 	blockBuffer.getSlotMap(slotmap);
 
-	slotmap[rec_id.slot] = SLOT_OCCUPIED;
+	slotmap[recId.slot] = SLOT_OCCUPIED;
 	blockBuffer.setSlotMap(slotmap);
 
     // increment the numEntries field in the header of the block to
@@ -468,6 +468,18 @@ int BlockAccess::insert(int relId, Attribute *record) {
     // the relation. (use RelCacheTable::setRelCatEntry function)
 	relCatEntry.numRecs++;
 	RelCacheTable::setRelCatEntry(relId, &relCatEntry);
+
+	for(int i = 0; i < relCatEntry.numAttrs; i++){
+		AttrCatEntry attrCatEntry;
+		AttrCacheTable::getAttrCatEntry(relId, i, &attrCatEntry);
+		Attribute attrVal = record[i];
+		if(attrCatEntry.rootBlock != -1){
+			int retVal = BPlusTree::bPlusInsert(relId, attrCatEntry.attrName, attrVal, recId);
+			if(retVal != SUCCESS)
+				return retVal;
+		}
+	} 
+
 
     return SUCCESS;
 }
@@ -636,10 +648,15 @@ int BlockAccess::deleteRelation(char relName[ATTR_SIZE]) {
 		/*
         // (the following part is only relevant once indexing has been implemented)
         // if index exists for the attribute (rootBlock != -1), call bplus destroy
-        if (rootBlock != -1) {
-            // delete the bplus tree rooted at rootBlock using BPlusTree::bPlusDestroy()
-        }
+        
 		*/
+		if (rootBlock != -1) {
+			int ret = BPlusTree::bPlusDestroy(rootBlock);
+		    if(ret != SUCCESS){
+				return ret;
+			}
+			// delete the bplus tree rooted at rootBlock using BPlusTree::bPlusDestroy()
+        }
 
 		// ! This code is an extra addition, it might not be correct/needed
 		if (numberOfAttributesDeleted == numAttributes) break;

@@ -135,19 +135,19 @@ int StaticBuffer::getBufferNum(int blockNum) {
 
 int StaticBuffer::setDirtyBit(int blockNum){
     // find the buffer index corresponding to the block using getBufferNum().
-	int bufferIndex = getBufferNum(blockNum);
+	int bufferNum = getBufferNum(blockNum);
 
     //! if block is not present in the buffer (bufferNum = E_BLOCKNOTINBUFFER)
-	if (bufferIndex == E_BLOCKNOTINBUFFER)
+	if (bufferNum == E_BLOCKNOTINBUFFER)
         return E_BLOCKNOTINBUFFER;
 
     //! if blockNum is out of bound (bufferNum = E_OUTOFBOUND)
-	if (bufferIndex == E_OUTOFBOUND)
+	if (bufferNum == E_OUTOFBOUND)
         return E_OUTOFBOUND;
 
     // else (the bufferNum is valid)
     //     set the dirty bit of that buffer to true in metainfo
-	metainfo[bufferIndex].dirty = true;
+	metainfo[bufferNum].dirty = true;
 
     return SUCCESS;
 }
