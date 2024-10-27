@@ -256,7 +256,7 @@ int Schema::dropIndex(char *relName, char *attrName) {
 
     // set rootBlock = -1 in the attribute cache entry of the attribute using
     // AttrCacheTable::setAttrCatEntry()
-    attrCatEntry.rootBlock == -1;
+    attrCatEntry.rootBlock = -1;
     AttrCacheTable::setAttrCatEntry(relId, attrName, &attrCatEntry);
 
     return SUCCESS;

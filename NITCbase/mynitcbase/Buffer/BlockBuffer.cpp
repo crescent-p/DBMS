@@ -162,9 +162,17 @@ BlockBuffer::BlockBuffer(char blocktype){
     // allocate a block on the disk and a buffer in memory to hold the new block of
     // given type using getFreeBlock function and get the return error codes if any.
 	// * NOTE: this line should be changed later
-	int blockType = blocktype == 'R' ? REC : UNUSED_BLK; 
-
-	int blockNum = getFreeBlock(blockType);
+	int blockTypeInt = 0; 
+	if(blocktype == 'R'){
+		blockTypeInt = REC;
+	}else if(blocktype == 'L'){
+		blockTypeInt = IND_LEAF;
+	}else if(blocktype == 'I'){
+		blockTypeInt = IND_INTERNAL;
+	}else {
+		blockTypeInt = UNUSED_BLK;
+	}
+	int blockNum = getFreeBlock(blockTypeInt);
 	if (blockNum < 0 || blockNum >= DISK_BLOCKS) {
 		std::cout << "Error: Block is not available\n";
 		this->blockNum = blockNum;
