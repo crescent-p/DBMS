@@ -14,6 +14,11 @@ struct RecId {
 struct IndexId {
   int block;
   int index;
+  bool operator==(const IndexId& other) const {
+
+        return block == other.block && index == other.index;
+
+    }
 };
 
 #endif  // NITCBASE_ID_H
