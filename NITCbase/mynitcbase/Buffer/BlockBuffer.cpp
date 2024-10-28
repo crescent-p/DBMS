@@ -113,6 +113,7 @@ int BlockBuffer::setHeader(struct HeadInfo *head){
     // the header of the block (pointed to by bufferHeader)
     //(hint: bufferHeader->numSlots = head->numSlots )
 	bufferHeader->blockType = head->blockType;
+	//setBlockType(bufferHeader->blockType);
 	bufferHeader->lblock = head->lblock;
 	bufferHeader->rblock = head->rblock;
 	bufferHeader->pblock = head->pblock;
