@@ -102,18 +102,6 @@ OpenRelTable::OpenRelTable()
 	strcpy(tableMetaInfo[ATTRCAT_RELID].relName, ATTRCAT_RELNAME);
 }
 
-// // OpenRelTable::~OpenRelTable()
-// // {
-// // 	// free all the memory that you allocated in the constructor
-// 
-// // 	//? close all open relations (from rel-id = 2 onwards. Why?)
-// // 	for (int i = 2; i < MAX_OPEN; ++i)
-// // 		if (!tableMetaInfo[i].free)
-// // 			OpenRelTable::closeRel(i); // we will implement this function later
-// 
-// // 	// free the memory allocated for rel-id 0 and 1 in the caches
-// // }
-
 OpenRelTable::~OpenRelTable() {
 
     // for i from 2 to MAX_OPEN-1:
