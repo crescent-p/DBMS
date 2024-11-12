@@ -46,6 +46,7 @@ StaticBuffer::StaticBuffer() {
 	}
 }
 
+
 // write back all modified blocks on system exit
 StaticBuffer::~StaticBuffer() {
 	for (int blockIndex = 0, blockAllocMapSlot = 0; blockIndex < 4; blockIndex++) {

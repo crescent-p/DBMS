@@ -83,6 +83,7 @@ enum RelCatFieldIndex {
   RELCAT_NO_SLOTS_PER_BLOCK_INDEX = 5  // #Slots
 };
 
+
 // Indexes for Attribute Catalog Attributes
 enum AttrCatFieldIndex {
   ATTRCAT_REL_NAME_INDEX = 0,      // Relation Name
