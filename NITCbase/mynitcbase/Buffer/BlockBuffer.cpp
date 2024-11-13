@@ -122,7 +122,6 @@ int RecBuffer::setRecord(union Attribute *record, int slotNum) {
 
 	ret = StaticBuffer::setDirtyBit(this->blockNum);
 	if (ret != SUCCESS) {
-		std::cout << "There is some error in the code!\n";
 		exit(1);
 	}
 
@@ -216,7 +215,6 @@ int BlockBuffer::getFreeBlock(int blockType) {
 	int bufferIndex = StaticBuffer::getFreeBuffer(blockNum);
 
 	if (bufferIndex < 0 && bufferIndex >= BUFFER_CAPACITY) {
-		printf("Error: Buffer is full\n");
 		return bufferIndex;
 	}
 
